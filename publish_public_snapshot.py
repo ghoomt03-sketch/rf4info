@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import shutil
@@ -122,16 +123,18 @@ def _snapshot_signature(manifest: dict) -> str:
     return json.dumps(stable, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
 
 
-def _source_fingerprint(path: Path = DEFAULT_SOURCE) -> dict[str, int]:
+def _source_fingerprint(path: Path = DEFAULT_SOURCE) -> dict[str, int | str]:
     stat = path.stat()
     with path.open("rb") as handle:
         header = handle.read(100)
-    if len(header) < 100 or header[:16] != b"SQLite format 3\x00":
-        raise RuntimeError("内部工作库不是有效的 SQLite 3 文件")
+        if len(header) < 100 or header[:16] != b"SQLite format 3\x00":
+            raise RuntimeError("内部工作库不是有效的 SQLite 3 文件")
+        digest = hashlib.sha256()
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
     return {
         "size": stat.st_size,
-        "change_counter": int.from_bytes(header[24:28], "big"),
-        "version_valid_for": int.from_bytes(header[92:96], "big"),
+        "content_sha256": digest.hexdigest(),
     }
 
 
