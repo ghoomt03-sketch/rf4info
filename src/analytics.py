@@ -1334,6 +1334,55 @@ def recommendation_table(
     return weather.sort_values(["score", "reference_income"], ascending=False)
 
 
+def recommendation_horizons(
+    player_level: int,
+    objective: str = "综合推荐",
+    fish_keyword: str = "",
+    blocked_fish: tuple[str, ...] = (),
+) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Build shared evidence once, then attach the two forecast hours."""
+    current = recommendation_table(0, player_level, objective, fish_keyword, blocked_fish)
+    if current.empty:
+        return current, current.copy()
+
+    next_weather = latest_weather()
+    next_weather = next_weather[
+        (next_weather["horizon"] == 1) & (next_weather["unlock_level"] <= player_level)
+    ].copy()
+    if next_weather.empty:
+        return current, current.iloc[0:0].copy()
+
+    weather_columns = [column for column in next_weather.columns if column != "map_id"]
+    shared = current.drop(columns=[column for column in weather_columns if column in current])
+    following = next_weather.merge(shared, on="map_id", how="inner")
+
+    temperature_delta = pd.to_numeric(
+        following["forecast_day_temperature"], errors="coerce"
+    ) - pd.to_numeric(following["normal_forecast_temperature"], errors="coerce")
+    following["temperature_regime"] = "暂无常温基线"
+    baseline_ready = following["temperature_baseline_samples"].ge(15) & temperature_delta.notna()
+    following.loc[baseline_ready & temperature_delta.le(-2), "temperature_regime"] = "低温"
+    following.loc[baseline_ready & temperature_delta.ge(2), "temperature_regime"] = "高温"
+    following.loc[
+        baseline_ready & temperature_delta.gt(-2) & temperature_delta.lt(2),
+        "temperature_regime",
+    ] = "常温"
+
+    is_farm = objective in ("搬砖收益", "搬砖（地图+点位）")
+    is_trophy = objective in ("蹲星", "蹲星（地图+鱼种）")
+    following["recommendation_label"] = following["map_name"]
+    if is_farm:
+        following["recommendation_label"] = (
+            following["map_name"] + " · " + following["point_label"]
+        )
+    elif is_trophy or objective == "指定鱼种":
+        following["recommendation_label"] = (
+            following["map_name"] + " · " + following["target_fish"]
+            + "（" + following["temperature_regime"] + "）"
+        )
+    return current, following.sort_values(["score", "reference_income"], ascending=False)
+
+
 def refresh_status() -> pd.DataFrame:
     return read_frame(
         """SELECT r.*,

@@ -21,6 +21,7 @@ from src.analytics import (
     filter_catches_by_selected_fish,
     fish_activity_table,
     point_group,
+    recommendation_horizons,
     rf4stat_trophy_update_activity,
     map_temperature_baselines,
     recent_window_evidence,
@@ -36,6 +37,38 @@ from src.normalization import canonical_bait, canonical_fish, normalize_coordina
 
 
 class CoreTests(unittest.TestCase):
+    @patch("src.analytics.latest_weather")
+    @patch("src.analytics.recommendation_table")
+    def test_recommendation_horizons_reuses_evidence_and_replaces_weather(
+        self, recommendation_table, latest_weather
+    ):
+        recommendation_table.return_value = pd.DataFrame([{
+            "map_id": "map-a", "map_name": "地图A", "unlock_level": 1,
+            "forecast_slot": "2026-10-30T10:00:00+08:00", "horizon": 0,
+            "weather_code": "clear", "forecast_day_temperature": 10.0,
+            "wind_speed": 1.0, "collected_at": "now", "source_url": "weather-0",
+            "天气": "晴", "normal_forecast_temperature": 12.0,
+            "temperature_baseline_samples": 20, "temperature_regime": "低温",
+            "point_label": "", "target_fish": "", "score": 42.0,
+            "reference_income": 100.0, "recommendation_label": "地图A",
+        }])
+        latest_weather.return_value = pd.DataFrame([{
+            "map_id": "map-a", "map_name": "地图A", "unlock_level": 1,
+            "forecast_slot": "2026-10-30T11:00:00+08:00", "horizon": 1,
+            "weather_code": "cloudy", "forecast_day_temperature": 14.0,
+            "wind_speed": 2.0, "collected_at": "now", "source_url": "weather-1",
+            "天气": "多云",
+        }])
+
+        current, following = recommendation_horizons(34)
+
+        recommendation_table.assert_called_once_with(0, 34, "综合推荐", "", ())
+        self.assertEqual(current.iloc[0]["horizon"], 0)
+        self.assertEqual(following.iloc[0]["horizon"], 1)
+        self.assertEqual(following.iloc[0]["weather_code"], "cloudy")
+        self.assertEqual(following.iloc[0]["temperature_regime"], "高温")
+        self.assertEqual(following.iloc[0]["score"], 42.0)
+
     def test_map_asset_collection_is_independent_from_earnings(self):
         soup = BeautifulSoup(
             '<script>{"calibration":{"mapSystemId":"map-a","minX":1,"minY":2,"maxX":101,"maxY":102,'

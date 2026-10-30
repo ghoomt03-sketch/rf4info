@@ -16,7 +16,7 @@ from src.analytics import (
     latest_map_assets,
     latest_weather,
     recent_catches,
-    recommendation_table,
+    recommendation_horizons,
     refresh_coverage_status,
     refresh_status,
     select_earnings_sample,
@@ -89,14 +89,13 @@ def load_all():
 
 
 @st.cache_data(ttl=300, show_spinner=False)
-def load_recommendation(
-    horizon: int,
+def load_recommendations(
     player_level: int,
     objective: str,
     fish_keyword: str,
     blocked_fish: tuple[str, ...],
 ):
-    return recommendation_table(horizon, player_level, objective, fish_keyword, blocked_fish)
+    return recommendation_horizons(player_level, objective, fish_keyword, blocked_fish)
 
 
 weather, earnings, map_assets, catches, status = load_all()
@@ -185,7 +184,7 @@ with st.sidebar:
         if stop_clicked:
             stop_refresh()
             load_all.clear()
-            load_recommendation.clear()
+            load_recommendations.clear()
             st.rerun(scope="fragment")
         refresh_state = get_refresh_state()
         refresh_labels = {
@@ -251,7 +250,7 @@ with st.sidebar:
         run_id = int(refresh_state.get("run_id", 0))
         if run_id > seen_run_id and refresh_state["state"] in {"completed", "partial", "failed", "cancelled"}:
             load_all.clear()
-            load_recommendation.clear()
+            load_recommendations.clear()
             st.session_state["seen_refresh_run_id"] = run_id
             st.rerun()
 
@@ -280,11 +279,14 @@ with tab_now:
         else:
             st.info("尚无天气缓存。点击左侧“联网刷新全部数据”，或运行 refresh_data.py。")
     else:
+        recommendation_frames = load_recommendations(
+            int(player_level), objective, fish_keyword, tuple(blocked_fish)
+        )
         now_col, next_col = st.columns(2)
         for container, horizon, title in ((now_col, 0, "当前小时去哪"), (next_col, 1, "下一小时去哪")):
             with container:
                 st.subheader(title)
-                rec = load_recommendation(horizon, int(player_level), objective, fish_keyword, tuple(blocked_fish))
+                rec = recommendation_frames[horizon]
                 if selected_maps:
                     rec = rec[rec["map_id"].isin(selected_maps)]
                 if weather_filter:
@@ -336,7 +338,7 @@ with tab_now:
                     "W 为 RF4DB 镜像普通周榜按目录门槛推定达标数；B 为 RF4DB 普通流多窗口加权小时速率；"
                     "C 为正式天气温度匹配分。当前用户日暴露和温度校准未达门槛，所以 C=0。"
                 )
-        rec = load_recommendation(0, int(player_level), objective, fish_keyword, tuple(blocked_fish))
+        rec = recommendation_frames[0]
         if selected_maps:
             rec = rec[rec["map_id"].isin(selected_maps)]
         if weather_filter:

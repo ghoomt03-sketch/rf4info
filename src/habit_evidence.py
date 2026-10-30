@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from bisect import bisect_right
 from collections import Counter
 
 import pandas as pd
@@ -36,12 +35,9 @@ def game_time_from_real(value) -> str | None:
     return f"{game_minutes // 60:02d}:{game_minutes % 60:02d}"
 
 
-WeatherSnapshots = tuple[list[int], list[str], list[str]]
-
-
-def _weather_lookup(map_ids: list[str]) -> dict[tuple[str, pd.Timestamp], WeatherSnapshots]:
+def _weather_frame(map_ids: list[str]) -> pd.DataFrame:
     if not map_ids:
-        return {}
+        return pd.DataFrame()
     placeholders = ",".join("?" for _ in map_ids)
     weather = read_frame(
         f"""SELECT map_id,forecast_slot,weather_code,forecast_day_temperature,
@@ -59,29 +55,9 @@ def _weather_lookup(map_ids: list[str]) -> dict[tuple[str, pd.Timestamp], Weathe
         & weather["weather_code"].notna()
         & ~weather["weather_code"].isin(["", "unknown"])
     ].sort_values("snapshot_time")
-    lookup: dict[tuple[str, pd.Timestamp], WeatherSnapshots] = {}
-    for (map_id, slot), group in weather.groupby(["map_id", "slot_time"], sort=False):
-        lookup[(map_id, slot)] = (
-            group["snapshot_time"].map(lambda value: value.value).tolist(),
-            group["weather_code"].astype(str).tolist(),
-            group["collected_at"].astype(str).tolist(),
-        )
-    return lookup
-
-
-def _match_weather(
-    lookup: dict[tuple[str, pd.Timestamp], WeatherSnapshots], map_id: str, hooked_at: pd.Timestamp
-) -> tuple[str | None, str | None]:
-    if not map_id or pd.isna(hooked_at):
-        return None, None
-    candidates = lookup.get((map_id, hooked_at.floor("h")))
-    if candidates is None:
-        return None, None
-    snapshot_times, weather_codes, collected_values = candidates
-    position = bisect_right(snapshot_times, hooked_at.value) - 1
-    if position < 0:
-        return None, None
-    return weather_codes[position], f"历史预报快照 {collected_values[position]}"
+    return weather.rename(columns={"collected_at": "weather_collected_at"})[
+        ["map_id", "slot_time", "snapshot_time", "weather_code", "weather_collected_at"]
+    ].sort_values("snapshot_time")
 
 
 def _empty_evidence() -> pd.DataFrame:
@@ -118,13 +94,30 @@ def rf4stat_habit_records(map_id: str = "", fish_id: str = "") -> pd.DataFrame:
     frame["hooked_time"] = frame["reported_time"] - pd.to_timedelta(
         frame["fight_offset_minutes"], unit="m"
     )
-    lookup = _weather_lookup(frame["map_id"].dropna().astype(str).unique().tolist())
-    matched = [
-        _match_weather(lookup, str(row.map_id or ""), row.hooked_time)
-        for row in frame.itertuples()
-    ]
-    frame["weather_code"] = [item[0] for item in matched]
-    frame["weather_basis"] = [item[1] for item in matched]
+    weather = _weather_frame(frame["map_id"].dropna().astype(str).unique().tolist())
+    weather_codes = pd.Series(None, index=frame.index, dtype="object")
+    weather_basis = pd.Series(None, index=frame.index, dtype="object")
+    if not weather.empty:
+        candidates = frame[frame["map_id"].notna() & frame["hooked_time"].notna()].copy()
+        candidates["slot_time"] = candidates["hooked_time"].dt.floor("h")
+        candidates["_row_index"] = candidates.index
+        matched = pd.merge_asof(
+            candidates.sort_values("hooked_time"),
+            weather,
+            left_on="hooked_time",
+            right_on="snapshot_time",
+            by=["map_id", "slot_time"],
+            direction="backward",
+        )
+        matched = matched[matched["weather_code"].notna()]
+        if not matched.empty:
+            row_indexes = matched["_row_index"].astype(int).tolist()
+            weather_codes.loc[row_indexes] = matched["weather_code"].astype(str).to_numpy()
+            weather_basis.loc[row_indexes] = (
+                "历史预报快照 " + matched["weather_collected_at"].astype(str)
+            ).to_numpy()
+    frame["weather_code"] = weather_codes
+    frame["weather_basis"] = weather_basis
     frame["source_record_key"] = "RF4-STAT:" + frame["source_key"].astype(str)
     frame["source_name"] = "RF4-STAT上鱼记录"
     frame["fish_name"] = frame.apply(
