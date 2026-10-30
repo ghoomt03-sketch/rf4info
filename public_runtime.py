@@ -5,14 +5,17 @@ import json
 import os
 import shutil
 import sqlite3
+import tempfile
+import threading
 from contextlib import closing
 from pathlib import Path
 
 
 ROOT_DIR = Path(__file__).resolve().parent
 PUBLIC_DATA_DIR = ROOT_DIR / "public_data"
-DEFAULT_RUNTIME = ROOT_DIR / ".public_runtime" / "public.sqlite3"
+DEFAULT_RUNTIME = Path(tempfile.gettempdir()) / f"rf4info-{os.getpid()}" / "public.sqlite3"
 SHARDED_TABLES = ("catch_records", "community_spots", "official_weekly_records")
+_PREPARE_LOCK = threading.Lock()
 
 
 def _sha256(path: Path) -> str:
@@ -24,6 +27,11 @@ def _sha256(path: Path) -> str:
 
 
 def prepare_public_runtime(data_dir: Path = PUBLIC_DATA_DIR, runtime_path: Path = DEFAULT_RUNTIME) -> Path:
+    with _PREPARE_LOCK:
+        return _prepare_public_runtime(data_dir, runtime_path)
+
+
+def _prepare_public_runtime(data_dir: Path, runtime_path: Path) -> Path:
     data_dir = data_dir.resolve()
     runtime_path = runtime_path.resolve()
     manifest_path = data_dir / "manifest.json"

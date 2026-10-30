@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import os
+
 import pandas as pd
 import streamlit as st
 
@@ -32,7 +34,8 @@ from src.user_settings import load_user_settings, save_user_settings
 from src.trophy_periods import trophy_period_evidence
 
 
-st.set_page_config(page_title="俄钓4筛选推荐", page_icon="🎣", layout="wide")
+if os.environ.get("RF4_PAGE_CONFIGURED") != "1":
+    st.set_page_config(page_title="俄钓4筛选推荐", page_icon="🎣", layout="wide")
 ensure_database()
 
 

@@ -4,16 +4,21 @@ import hashlib
 import json
 import sqlite3
 import tempfile
+import os
 import unittest
 from contextlib import closing
 from pathlib import Path
 
 from export_public_snapshot import _week_key, export_public_snapshot
-from public_runtime import prepare_public_runtime
+from public_runtime import DEFAULT_RUNTIME, prepare_public_runtime
 from src.db import SCHEMA
 
 
 class PublicSnapshotTests(unittest.TestCase):
+    def test_default_runtime_uses_process_scoped_system_temp_directory(self):
+        expected_parent = Path(tempfile.gettempdir()) / f"rf4info-{os.getpid()}"
+        self.assertEqual(DEFAULT_RUNTIME.parent, expected_parent)
+
     def test_week_key_uses_beijing_natural_week(self):
         self.assertEqual(_week_key("2026-11-01T16:30:00Z"), "2026-W45")
         self.assertEqual(_week_key("2026-11-01T23:30:00+08:00"), "2026-W44")
