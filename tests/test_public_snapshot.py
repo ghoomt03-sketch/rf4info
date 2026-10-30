@@ -9,6 +9,7 @@ from contextlib import closing
 from pathlib import Path
 
 from export_public_snapshot import _week_key, export_public_snapshot
+from publish_public_snapshot import _snapshot_signature
 from rf4_public_runtime import DEFAULT_RUNTIME, prepare_public_runtime
 from src.db import SCHEMA
 
@@ -78,6 +79,16 @@ class PublicSnapshotTests(unittest.TestCase):
             bundle_path = output_dir / bundle["path"]
             self.assertEqual(hashlib.sha256(bundle_path.read_bytes()).hexdigest(), bundle["sha256"])
             self.assertGreater(bundle["uncompressed_size_bytes"], bundle["size_bytes"])
+
+            second_output = root / "public_data_second"
+            second_manifest = export_public_snapshot(source, second_output)
+            self.assertEqual(
+                _snapshot_signature(manifest), _snapshot_signature(second_manifest)
+            )
+            self.assertEqual(
+                bundle_path.read_bytes(),
+                (second_output / second_manifest["runtime_bundle"]["path"]).read_bytes(),
+            )
 
             progress_updates = []
             prepare_public_runtime(

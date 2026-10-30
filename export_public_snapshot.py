@@ -65,10 +65,12 @@ def _sha256(path: Path) -> str:
 
 
 def _gzip_file(source: Path, destination: Path) -> None:
-    with source.open("rb") as source_handle, gzip.open(
-        destination, "wb", compresslevel=6
-    ) as destination_handle:
-        shutil.copyfileobj(source_handle, destination_handle, 1024 * 1024)
+    # 固定 gzip 头，避免源数据未变时仅因生成时间不同产生新提交。
+    with source.open("rb") as source_handle, destination.open("wb") as raw_handle:
+        with gzip.GzipFile(
+            filename="", mode="wb", fileobj=raw_handle, compresslevel=6, mtime=0
+        ) as destination_handle:
+            shutil.copyfileobj(source_handle, destination_handle, 1024 * 1024)
 
 
 def _week_key(*values: object) -> str:

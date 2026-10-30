@@ -13,6 +13,7 @@ TASKS = {
     "RF4Local-Fast-Catches": ("RF4DB普通/星级渔获", 15),
     "RF4Local-Hourly-RF4DB": ("RF4DB天气与收益", 60),
     "RF4Local-SixHour-Sources": ("其余来源及历史补采", 360),
+    "RF4Local-Publish-Public": ("脱敏公开数据发布", 60),
 }
 
 

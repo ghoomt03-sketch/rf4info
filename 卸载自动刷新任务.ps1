@@ -1,6 +1,6 @@
 $ErrorActionPreference = 'Stop'
 $projectRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
-@('RF4Local-Fast-Catches', 'RF4Local-Hourly-RF4DB', 'RF4Local-SixHour-Sources') | ForEach-Object {
+@('RF4Local-Fast-Catches', 'RF4Local-Hourly-RF4DB', 'RF4Local-SixHour-Sources', 'RF4Local-Publish-Public') | ForEach-Object {
     Unregister-ScheduledTask -TaskName $_ -Confirm:$false -ErrorAction SilentlyContinue
 }
 $statePath = Join-Path $projectRoot 'data\scheduler_state.json'
