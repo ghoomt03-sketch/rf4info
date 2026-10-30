@@ -67,6 +67,7 @@ class PublicSnapshotTests(unittest.TestCase):
                 )
                 conn.commit()
 
+            source_hash = hashlib.sha256(source.read_bytes()).hexdigest()
             manifest = export_public_snapshot(source, output_dir)
             stored_manifest = json.loads((output_dir / "manifest.json").read_text(encoding="utf-8"))
             self.assertEqual(stored_manifest, manifest)
@@ -89,6 +90,7 @@ class PublicSnapshotTests(unittest.TestCase):
                 bundle_path.read_bytes(),
                 (second_output / second_manifest["runtime_bundle"]["path"]).read_bytes(),
             )
+            self.assertEqual(hashlib.sha256(source.read_bytes()).hexdigest(), source_hash)
 
             progress_updates = []
             prepare_public_runtime(

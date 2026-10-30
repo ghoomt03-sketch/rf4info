@@ -49,6 +49,10 @@ def _table_names(conn: sqlite3.Connection) -> set[str]:
     }
 
 
+def _connect_readonly(path: Path) -> sqlite3.Connection:
+    return sqlite3.connect(f"{path.as_uri()}?mode=ro", uri=True)
+
+
 def _row_counts(conn: sqlite3.Connection, tables: set[str]) -> dict[str, int]:
     return {
         table: int(conn.execute(f'SELECT COUNT(*) FROM "{table}"').fetchone()[0])
@@ -144,7 +148,7 @@ def export_public_snapshot(source: Path = DEFAULT_SOURCE, output_dir: Path = DEF
     weeks_dir.mkdir()
 
     try:
-        with closing(sqlite3.connect(source)) as source_conn, closing(sqlite3.connect(full_copy)) as copy_conn:
+        with closing(_connect_readonly(source)) as source_conn, closing(sqlite3.connect(full_copy)) as copy_conn:
             source_conn.backup(copy_conn)
 
         with closing(sqlite3.connect(full_copy)) as conn:
