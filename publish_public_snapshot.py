@@ -122,6 +122,11 @@ def _snapshot_signature(manifest: dict) -> str:
     return json.dumps(stable, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
 
 
+def _source_fingerprint(path: Path = DEFAULT_SOURCE) -> dict[str, int]:
+    stat = path.stat()
+    return {"size": stat.st_size, "mtime_ns": stat.st_mtime_ns}
+
+
 def _load_manifest(directory: Path) -> dict | None:
     try:
         return json.loads((directory / "manifest.json").read_text(encoding="utf-8"))
@@ -201,6 +206,12 @@ def publish(*, push: bool = True) -> str:
                 if head != remote_head:
                     raise RuntimeError("本地 main 与 origin/main 不一致，拒绝自动发布")
 
+            source_fingerprint = _source_fingerprint()
+            if state.get("source_fingerprint") == source_fingerprint:
+                _write_state(status="unchanged", last_success_at=_now(), last_error=None)
+                print("内部工作库未变化，本轮无需发布。")
+                return "unchanged"
+
             # 公开库可能较大；使用项目所在数据盘，避免系统临时盘空间不足。
             with tempfile.TemporaryDirectory(
                 prefix=".public-publish-", dir=ROOT_DIR
@@ -209,7 +220,10 @@ def publish(*, push: bool = True) -> str:
                 manifest = export_public_snapshot(DEFAULT_SOURCE, candidate)
                 current = _load_manifest(PUBLIC_DIR)
                 if current and _snapshot_signature(current) == _snapshot_signature(manifest):
-                    _write_state(status="unchanged", last_success_at=_now(), last_error=None)
+                    _write_state(
+                        status="unchanged", source_fingerprint=source_fingerprint,
+                        last_success_at=_now(), last_error=None,
+                    )
                     print("公开数据无实质变化，本轮无需发布。")
                     return "unchanged"
 
@@ -224,7 +238,10 @@ def publish(*, push: bool = True) -> str:
                     _validate_staged_paths(staged)
                     if not staged:
                         _restore_previous(previous)
-                        _write_state(status="unchanged", last_success_at=_now(), last_error=None)
+                        _write_state(
+                            status="unchanged", source_fingerprint=source_fingerprint,
+                            last_success_at=_now(), last_error=None,
+                        )
                         return "unchanged"
                     stamp = datetime.now().astimezone().strftime("%Y-%m-%d %H:%M %z")
                     _git("commit", "-m", f"{COMMIT_PREFIX} {stamp}")
@@ -242,17 +259,20 @@ def publish(*, push: bool = True) -> str:
             if not push:
                 _write_state(
                     status="committed_not_pushed", pending_commit=commit,
-                    last_success_at=_now(), last_error=None,
+                    source_fingerprint=source_fingerprint, last_success_at=_now(), last_error=None,
                 )
                 return "committed_not_pushed"
             try:
                 _git("push", "origin", "main")
             except Exception as exc:
-                _write_state(status="push_failed", pending_commit=commit, last_error=str(exc))
+                _write_state(
+                    status="push_failed", pending_commit=commit,
+                    source_fingerprint=source_fingerprint, last_error=str(exc),
+                )
                 raise
             _write_state(
                 status="published", pending_commit=None, last_success_at=_now(),
-                last_commit=commit, last_error=None,
+                last_commit=commit, source_fingerprint=source_fingerprint, last_error=None,
             )
             print(f"公开数据已发布：{commit[:12]}")
             return "published"

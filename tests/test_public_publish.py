@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import unittest
 
-from publish_public_snapshot import _snapshot_signature, _validate_staged_paths
+from publish_public_snapshot import _snapshot_signature, _source_fingerprint, _validate_staged_paths
 
 
 class PublicPublishTests(unittest.TestCase):
@@ -17,6 +17,17 @@ class PublicPublishTests(unittest.TestCase):
         _validate_staged_paths(["public_data/manifest.json", "public_data/weeks/a.sqlite3"])
         with self.assertRaises(RuntimeError):
             _validate_staged_paths(["public_data/manifest.json", "data/rf4.sqlite3"])
+
+    def test_source_fingerprint_changes_with_file(self):
+        import tempfile
+        from pathlib import Path
+
+        with tempfile.TemporaryDirectory() as folder:
+            path = Path(folder) / "source.sqlite3"
+            path.write_bytes(b"a")
+            first = _source_fingerprint(path)
+            path.write_bytes(b"more data")
+            self.assertNotEqual(first, _source_fingerprint(path))
 
 
 if __name__ == "__main__":
