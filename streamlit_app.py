@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 import os
+import runpy
 import time
 
 import streamlit as st
@@ -38,7 +39,7 @@ os.environ["RF4_DB_PATH"] = str(runtime_database)
 startup_progress.progress(70, text="正在读取筛选与推荐数据")
 time.sleep(0.05)
 
-import app  # noqa: E402,F401  Streamlit executes app.py at import time.
+runpy.run_module("app", run_name="__main__")
 
 startup_progress.progress(100, text="页面加载完成")
 startup_progress.empty()
