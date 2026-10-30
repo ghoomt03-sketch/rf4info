@@ -181,8 +181,8 @@ def _assert_repository_ready() -> None:
     remote = _git("remote", "get-url", "origin").stdout.strip().replace("\\", "/")
     if EXPECTED_REMOTE_SUFFIX not in remote:
         raise RuntimeError(f"origin 不是已登记的公开仓库：{remote}")
-    if _git("status", "--porcelain=v1", "--untracked-files=all").stdout.strip():
-        raise RuntimeError("工作区存在未提交改动，已跳过自动发布以免误提交")
+    if _git("diff", "--cached", "--quiet", check=False).returncode:
+        raise RuntimeError("索引中存在预先暂存的改动，已跳过自动发布以免误提交")
 
 
 def _retry_pending_push(state: dict[str, object]) -> bool:
