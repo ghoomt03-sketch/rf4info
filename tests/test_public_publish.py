@@ -22,14 +22,17 @@ class PublicPublishTests(unittest.TestCase):
         import sqlite3
         import tempfile
         from pathlib import Path
+        from contextlib import closing
 
         with tempfile.TemporaryDirectory() as folder:
             path = Path(folder) / "source.sqlite3"
-            with sqlite3.connect(path) as conn:
-                conn.execute("CREATE TABLE sample(value TEXT)")
+            with closing(sqlite3.connect(path)) as conn:
+                with conn:
+                    conn.execute("CREATE TABLE sample(value TEXT)")
             first = _source_fingerprint(path)
-            with sqlite3.connect(path) as conn:
-                conn.execute("INSERT INTO sample VALUES('new data')")
+            with closing(sqlite3.connect(path)) as conn:
+                with conn:
+                    conn.execute("INSERT INTO sample VALUES('new data')")
             self.assertNotEqual(first, _source_fingerprint(path))
 
 
