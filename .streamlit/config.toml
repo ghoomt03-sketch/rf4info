@@ -6,7 +6,7 @@ secondaryBackgroundColor = "#0d2833"
 textColor = "#e7f6f5"
 
 [server]
-headless = false
+headless = true
 showEmailPrompt = false
 
 [browser]
