@@ -1,18 +1,18 @@
 {
   "schema_version": 3,
-  "generated_at": "2026-10-30T19:07:29.468323+08:00",
+  "generated_at": "2026-10-30T19:10:05.176720+08:00",
   "core": "core.sqlite3",
   "runtime_bundle": {
     "path": "runtime.sqlite3.gz",
-    "size_bytes": 12460159,
+    "size_bytes": 12460162,
     "uncompressed_size_bytes": 78737408,
-    "sha256": "8b46b07e440a8c723c04011c00f4915d92020feb93ff389f096036c127e2800f"
+    "sha256": "0b821ddddab18872007364e2cd1f9585d13b1202e0f6bc62df872aa92ca18866"
   },
   "files": [
     {
       "path": "core.sqlite3",
       "size_bytes": 20979712,
-      "sha256": "cd09714986f04c955ccee2f358a066458eb9df14adc5041ba78c12dbed479979",
+      "sha256": "be470c1ae3a9940fec1c707ccb7e199bccca2d78e906d414975bd8be356c575a",
       "row_counts": {
         "behavior_regimes": 0,
         "catch_records": 0,
