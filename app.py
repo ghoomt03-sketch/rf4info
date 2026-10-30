@@ -101,11 +101,12 @@ def load_recommendation(
 
 weather, earnings, map_assets, catches, status = load_all()
 user_settings = load_user_settings()
-st.title("俄罗斯钓鱼4 · 筛选推荐工具")
-if PUBLIC_MODE:
-    st.caption("公开只读版 · 数据由本地处理端采集、校验和发布；页面不会访问来源网站或修改数据库。")
-else:
-    st.caption("当前版本先可靠缓存公开数据；温度校准、用户日上星强度和习性漂移模型将在历史样本达到门槛后启用。")
+if os.environ.get("RF4_SHELL_RENDERED") != "1":
+    st.title("俄罗斯钓鱼4 · 筛选推荐工具")
+    if PUBLIC_MODE:
+        st.caption("公开只读版 · 数据由本地处理端采集、校验和发布；页面不会访问来源网站或修改数据库。")
+    else:
+        st.caption("当前版本先可靠缓存公开数据；温度校准、用户日上星强度和习性漂移模型将在历史样本达到门槛后启用。")
 
 with st.sidebar:
     st.header("筛选条件")

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from bisect import bisect_right
 from collections import Counter
 
 import pandas as pd
@@ -35,7 +36,10 @@ def game_time_from_real(value) -> str | None:
     return f"{game_minutes // 60:02d}:{game_minutes % 60:02d}"
 
 
-def _weather_lookup(map_ids: list[str]) -> dict[tuple[str, pd.Timestamp], pd.DataFrame]:
+WeatherSnapshots = tuple[list[int], list[str], list[str]]
+
+
+def _weather_lookup(map_ids: list[str]) -> dict[tuple[str, pd.Timestamp], WeatherSnapshots]:
     if not map_ids:
         return {}
     placeholders = ",".join("?" for _ in map_ids)
@@ -55,25 +59,29 @@ def _weather_lookup(map_ids: list[str]) -> dict[tuple[str, pd.Timestamp], pd.Dat
         & weather["weather_code"].notna()
         & ~weather["weather_code"].isin(["", "unknown"])
     ].sort_values("snapshot_time")
-    return {
-        (map_id, slot): group
-        for (map_id, slot), group in weather.groupby(["map_id", "slot_time"], sort=False)
-    }
+    lookup: dict[tuple[str, pd.Timestamp], WeatherSnapshots] = {}
+    for (map_id, slot), group in weather.groupby(["map_id", "slot_time"], sort=False):
+        lookup[(map_id, slot)] = (
+            group["snapshot_time"].map(lambda value: value.value).tolist(),
+            group["weather_code"].astype(str).tolist(),
+            group["collected_at"].astype(str).tolist(),
+        )
+    return lookup
 
 
 def _match_weather(
-    lookup: dict[tuple[str, pd.Timestamp], pd.DataFrame], map_id: str, hooked_at: pd.Timestamp
+    lookup: dict[tuple[str, pd.Timestamp], WeatherSnapshots], map_id: str, hooked_at: pd.Timestamp
 ) -> tuple[str | None, str | None]:
     if not map_id or pd.isna(hooked_at):
         return None, None
     candidates = lookup.get((map_id, hooked_at.floor("h")))
-    if candidates is None or candidates.empty:
+    if candidates is None:
         return None, None
-    eligible = candidates[candidates["snapshot_time"] <= hooked_at]
-    if eligible.empty:
+    snapshot_times, weather_codes, collected_values = candidates
+    position = bisect_right(snapshot_times, hooked_at.value) - 1
+    if position < 0:
         return None, None
-    matched = eligible.iloc[-1]
-    return str(matched["weather_code"]), f"历史预报快照 {matched['collected_at']}"
+    return weather_codes[position], f"历史预报快照 {collected_values[position]}"
 
 
 def _empty_evidence() -> pd.DataFrame:
