@@ -12,6 +12,7 @@ from pathlib import Path
 from bs4 import BeautifulSoup
 
 from .browser_client import browser_get
+from .catalog import rf4db_fish_catalog
 from .config import DATA_DIR, DB_PATH, FISH_ZH, MAPS, RAW_DIR, RF4DB_ZH_BASE
 
 
@@ -287,35 +288,6 @@ def canonical_bait(
         return canonical_id or f"model:{hashlib.sha1(raw.encode('utf-8')).hexdigest()[:12]}", raw, True
     safe_id = re.sub(r"[^A-Za-z0-9_.:-]+", "-", canonical_id).strip("-") or "unknown"
     return canonical_id or safe_id, f"未收录标准饵料（{safe_id}）", False
-
-
-def rf4db_fish_catalog() -> dict[str, str]:
-    """读取 RF4DB 中文渔获形成稳定 ID→中文标准名主表。"""
-    catalog = dict(FISH_ZH)
-    try:
-        cached = json.loads(RF4DB_FISH_CATALOG_PATH.read_text(encoding="utf-8"))
-        if isinstance(cached, dict):
-            catalog.update({str(key): str(value) for key, value in cached.items()})
-    except (OSError, json.JSONDecodeError):
-        pass
-    if not DB_PATH.exists():
-        return catalog
-    try:
-        with closing(sqlite3.connect(DB_PATH)) as conn, conn:
-            rows = conn.execute(
-                """SELECT fish_id, fish_name_en, COUNT(*) AS samples
-                   FROM catch_records
-                   WHERE fish_id IS NOT NULL AND fish_name_en IS NOT NULL
-                   GROUP BY fish_id, fish_name_en
-                   ORDER BY samples ASC"""
-            ).fetchall()
-    except sqlite3.Error:
-        return catalog
-    for fish_id, fish_name, _ in rows:
-        name = str(fish_name or "").strip()
-        if fish_id and re.search(r"[\u4e00-\u9fff]", name):
-            catalog[str(fish_id)] = name
-    return catalog
 
 
 def refresh_rf4db_fish_catalog(stable_ids: list[str], request_delay: float = 0.1) -> dict[str, str]:

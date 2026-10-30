@@ -24,14 +24,18 @@ from src.analytics import (
     weekly_evidence_details,
 )
 from src.config import MAPS, PUBLIC_MODE, WEATHER_ZH
+from src.catalog import rf4db_fish_catalog
 from src.db import ensure_database
-from src.refresh_process import get_refresh_state, start_refresh, stop_refresh
-from src.refresh_reporting import SOURCE_LABELS
-from src.scheduler_status import scheduler_status
 from src.map_render import build_interactive_map_figure, spot_table
-from src.normalization import rf4db_fish_catalog
 from src.user_settings import load_user_settings, save_user_settings
 from src.trophy_periods import trophy_period_evidence
+
+if not PUBLIC_MODE:
+    from src.refresh_process import get_refresh_state, start_refresh, stop_refresh
+    from src.refresh_reporting import SOURCE_LABELS
+    from src.scheduler_status import scheduler_status
+else:
+    SOURCE_LABELS = {}
 
 
 if os.environ.get("RF4_PAGE_CONFIGURED") != "1":

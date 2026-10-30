@@ -17,7 +17,7 @@ echo [2/4] Checking Python packages...
 ".venv\Scripts\python.exe" -c "import streamlit,pandas,numpy,requests,bs4,lxml,plotly,playwright" >nul 2>nul
 if errorlevel 1 (
     echo Installing required packages. This can take several minutes...
-    ".venv\Scripts\python.exe" -m pip install --disable-pip-version-check -r "requirements.txt"
+    ".venv\Scripts\python.exe" -m pip install --disable-pip-version-check -r "requirements-local.txt"
     if errorlevel 1 goto :install_failed
 )
 

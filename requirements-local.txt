@@ -1,0 +1,5 @@
+-r requirements.txt
+requests>=2.32,<3
+beautifulsoup4>=4.12,<5
+lxml>=5.3,<7
+playwright>=1.56,<2

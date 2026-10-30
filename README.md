@@ -8,7 +8,7 @@
 
 ```powershell
 python -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+.\.venv\Scripts\python.exe -m pip install -r requirements-local.txt
 .\.venv\Scripts\python.exe refresh_data.py
 .\.venv\Scripts\python.exe -m streamlit run app.py
 ```
