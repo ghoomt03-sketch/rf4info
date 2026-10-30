@@ -1,18 +1,18 @@
 {
   "schema_version": 3,
-  "generated_at": "2026-10-31T06:22:54.826385+08:00",
+  "generated_at": "2026-10-31T07:23:23.021476+08:00",
   "core": "core.sqlite3",
   "runtime_bundle": {
     "path": "runtime.sqlite3.gz",
-    "size_bytes": 13273720,
-    "uncompressed_size_bytes": 83668992,
-    "sha256": "b6e494e601f81a6cad7c163a61d6df913cdf6d8afa22475444e834e5cd096139"
+    "size_bytes": 13305338,
+    "uncompressed_size_bytes": 83841024,
+    "sha256": "c063fb041ab00b23d416b690c6174a28e8e9316e0c6fd4f4a2c1deb71d42d3c0"
   },
   "files": [
     {
       "path": "core.sqlite3",
-      "size_bytes": 22421504,
-      "sha256": "328d481ee33654a5b45fed9a0653cb38b963e72b8524c045f85e1afbf249bf97",
+      "size_bytes": 22466560,
+      "sha256": "f45d028867dcfe9345a525993dbdfd33744d74a303c7f0ceb24d94d7d9a4eac4",
       "row_counts": {
         "behavior_regimes": 0,
         "catch_records": 0,
@@ -22,8 +22,8 @@
         "maps": 19,
         "official_weekly_records": 0,
         "refresh_coverage": 10,
-        "refresh_runs": 924,
-        "weather_forecasts": 19911
+        "refresh_runs": 932,
+        "weather_forecasts": 20055
       }
     },
     {
@@ -140,26 +140,26 @@
     },
     {
       "path": "weeks/2026-W44.sqlite3",
-      "size_bytes": 37806080,
-      "sha256": "36849b3649909d93adaa133ab232c0a5c32a453dc16c7b57c22e466d1db9bb82",
+      "size_bytes": 37920768,
+      "sha256": "94b39eae129fe50fd18bac6fdbee0db445d1a5a7ce47b77c3925bf4b91f78700",
       "week": "2026-W44",
       "row_counts": {
-        "catch_records": 88279,
-        "community_spots": 22906,
+        "catch_records": 88539,
+        "community_spots": 22956,
         "official_weekly_records": 273
       }
     }
   ],
   "source_row_counts": {
     "behavior_regimes": 0,
-    "catch_records": 106145,
-    "community_spots": 43839,
+    "catch_records": 106405,
+    "community_spots": 43889,
     "earnings_samples": 2414,
     "map_assets": 18,
     "maps": 19,
     "official_weekly_records": 1529,
     "refresh_coverage": 10,
-    "refresh_runs": 924,
-    "weather_forecasts": 19911
+    "refresh_runs": 932,
+    "weather_forecasts": 20055
   }
 }
