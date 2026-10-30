@@ -9,7 +9,7 @@ from contextlib import closing
 from pathlib import Path
 
 from export_public_snapshot import _week_key, export_public_snapshot
-from public_runtime import DEFAULT_RUNTIME, prepare_public_runtime
+from rf4_public_runtime import DEFAULT_RUNTIME, prepare_public_runtime
 from src.db import SCHEMA
 
 

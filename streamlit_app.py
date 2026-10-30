@@ -5,7 +5,7 @@ import os
 
 import streamlit as st
 
-from public_runtime import prepare_public_runtime
+from rf4_public_runtime import prepare_public_runtime
 
 
 st.set_page_config(page_title="俄钓4筛选推荐", page_icon="🎣", layout="wide")

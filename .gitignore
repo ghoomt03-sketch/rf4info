@@ -10,6 +10,7 @@ data/rf4stat-chrome/
 data/rf4stat-chrome-background/
 data/rf4-background-chrome/
 data/rf4stat-browser.lock
+data/collection.lock
 data/rf4stat_posts_state.json
 data/history_backfill_state.json
 data/refresh_job.json
