@@ -4,7 +4,6 @@ import hashlib
 import json
 import sqlite3
 import tempfile
-import os
 import unittest
 from contextlib import closing
 from pathlib import Path
@@ -15,8 +14,8 @@ from src.db import SCHEMA
 
 
 class PublicSnapshotTests(unittest.TestCase):
-    def test_default_runtime_uses_process_scoped_system_temp_directory(self):
-        expected_parent = Path(tempfile.gettempdir()) / f"rf4info-{os.getpid()}"
+    def test_default_runtime_uses_reusable_system_temp_directory(self):
+        expected_parent = Path(tempfile.gettempdir()) / "rf4info"
         self.assertEqual(DEFAULT_RUNTIME.parent, expected_parent)
 
     def test_week_key_uses_beijing_natural_week(self):
@@ -76,7 +75,15 @@ class PublicSnapshotTests(unittest.TestCase):
                 path = output_dir / item["path"]
                 self.assertEqual(hashlib.sha256(path.read_bytes()).hexdigest(), item["sha256"])
 
-            prepare_public_runtime(output_dir, runtime)
+            progress_updates = []
+            prepare_public_runtime(
+                output_dir,
+                runtime,
+                progress_callback=lambda value, text: progress_updates.append((value, text)),
+            )
+            self.assertEqual(progress_updates[-1], (1.0, "公开数据加载完成"))
+            self.assertTrue(any("组装周数据" in text for _, text in progress_updates))
+            self.assertEqual(progress_updates, sorted(progress_updates, key=lambda item: item[0]))
             with closing(sqlite3.connect(runtime)) as conn:
                 self.assertIsNone(conn.execute(
                     "SELECT player_name FROM official_weekly_records"
