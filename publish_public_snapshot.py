@@ -124,7 +124,15 @@ def _snapshot_signature(manifest: dict) -> str:
 
 def _source_fingerprint(path: Path = DEFAULT_SOURCE) -> dict[str, int]:
     stat = path.stat()
-    return {"size": stat.st_size, "mtime_ns": stat.st_mtime_ns}
+    with path.open("rb") as handle:
+        header = handle.read(100)
+    if len(header) < 100 or header[:16] != b"SQLite format 3\x00":
+        raise RuntimeError("内部工作库不是有效的 SQLite 3 文件")
+    return {
+        "size": stat.st_size,
+        "change_counter": int.from_bytes(header[24:28], "big"),
+        "version_valid_for": int.from_bytes(header[92:96], "big"),
+    }
 
 
 def _load_manifest(directory: Path) -> dict | None:

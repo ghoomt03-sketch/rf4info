@@ -19,14 +19,17 @@ class PublicPublishTests(unittest.TestCase):
             _validate_staged_paths(["public_data/manifest.json", "data/rf4.sqlite3"])
 
     def test_source_fingerprint_changes_with_file(self):
+        import sqlite3
         import tempfile
         from pathlib import Path
 
         with tempfile.TemporaryDirectory() as folder:
             path = Path(folder) / "source.sqlite3"
-            path.write_bytes(b"a")
+            with sqlite3.connect(path) as conn:
+                conn.execute("CREATE TABLE sample(value TEXT)")
             first = _source_fingerprint(path)
-            path.write_bytes(b"more data")
+            with sqlite3.connect(path) as conn:
+                conn.execute("INSERT INTO sample VALUES('new data')")
             self.assertNotEqual(first, _source_fingerprint(path))
 
 
