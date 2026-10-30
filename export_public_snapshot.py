@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import gzip
 import hashlib
 import json
 import os
@@ -61,6 +62,13 @@ def _sha256(path: Path) -> str:
         for chunk in iter(lambda: handle.read(1024 * 1024), b""):
             digest.update(chunk)
     return digest.hexdigest()
+
+
+def _gzip_file(source: Path, destination: Path) -> None:
+    with source.open("rb") as source_handle, gzip.open(
+        destination, "wb", compresslevel=6
+    ) as destination_handle:
+        shutil.copyfileobj(source_handle, destination_handle, 1024 * 1024)
 
 
 def _week_key(*values: object) -> str:
@@ -128,6 +136,7 @@ def export_public_snapshot(source: Path = DEFAULT_SOURCE, output_dir: Path = DEF
     output_dir.parent.mkdir(parents=True, exist_ok=True)
     staging = Path(tempfile.mkdtemp(prefix=f".{output_dir.name}-", dir=output_dir.parent))
     full_copy = staging / "sanitized-full.sqlite3"
+    runtime_bundle = staging / "runtime.sqlite3.gz"
     core_path = staging / "core.sqlite3"
     weeks_dir = staging / "weeks"
     weeks_dir.mkdir()
@@ -148,6 +157,8 @@ def export_public_snapshot(source: Path = DEFAULT_SOURCE, output_dir: Path = DEF
                 raise RuntimeError(f"公开数据关键表为空：{', '.join(empty)}")
             with closing(sqlite3.connect(core_path)) as core_conn:
                 conn.backup(core_conn)
+
+        _finalize_database(full_copy)
 
         shard_connections: dict[str, sqlite3.Connection] = {}
         shard_counts: dict[str, dict[str, int]] = defaultdict(lambda: defaultdict(int))
@@ -191,6 +202,14 @@ def export_public_snapshot(source: Path = DEFAULT_SOURCE, output_dir: Path = DEF
                     f"{table} 分片行数不守恒：源库 {source_counts[table]}，分片 {shard_total[table]}"
                 )
 
+        _gzip_file(full_copy, runtime_bundle)
+        bundle_info = {
+            "path": runtime_bundle.relative_to(staging).as_posix(),
+            "size_bytes": runtime_bundle.stat().st_size,
+            "uncompressed_size_bytes": full_copy.stat().st_size,
+            "sha256": _sha256(runtime_bundle),
+        }
+
         files = []
         for path in [core_path, *sorted(weeks_dir.glob("*.sqlite3"))]:
             relative = path.relative_to(staging).as_posix()
@@ -204,9 +223,10 @@ def export_public_snapshot(source: Path = DEFAULT_SOURCE, output_dir: Path = DEF
             files.append(item)
 
         manifest = {
-            "schema_version": 2,
+            "schema_version": 3,
             "generated_at": datetime.now().astimezone().isoformat(),
             "core": "core.sqlite3",
+            "runtime_bundle": bundle_info,
             "files": files,
             "source_row_counts": source_counts,
         }
@@ -244,9 +264,11 @@ def main() -> None:
     args = parser.parse_args()
     manifest = export_public_snapshot(args.source, args.output)
     total_size = sum(item["size_bytes"] for item in manifest["files"])
+    bundle_size = manifest["runtime_bundle"]["size_bytes"]
     print(
         f"公开数据已生成：{args.output}；{len(manifest['files']) - 1} 个周分片，"
-        f"合计 {total_size / 1024 / 1024:.2f} MiB"
+        f"分片合计 {total_size / 1024 / 1024:.2f} MiB，"
+        f"启动包 {bundle_size / 1024 / 1024:.2f} MiB"
     )
 
 

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import gzip
 import hashlib
 import json
 import os
@@ -52,7 +53,7 @@ def _prepare_public_runtime(
     runtime_path = runtime_path.resolve()
     manifest_path = data_dir / "manifest.json"
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-    if manifest.get("schema_version") != 2:
+    if manifest.get("schema_version") not in {2, 3}:
         raise RuntimeError("不支持的公开数据清单版本")
 
     version = hashlib.sha256(manifest_path.read_bytes()).hexdigest()
@@ -61,6 +62,12 @@ def _prepare_public_runtime(
         if version_path.read_text(encoding="utf-8").strip() == version:
             _report_progress(progress_callback, 1.0, "已复用校验通过的公开数据")
             return runtime_path
+
+    bundle = manifest.get("runtime_bundle")
+    if isinstance(bundle, dict):
+        return _prepare_from_bundle(
+            data_dir, runtime_path, version_path, version, manifest, bundle, progress_callback
+        )
 
     files = manifest["files"]
     for file_index, item in enumerate(files, start=1):
@@ -110,6 +117,53 @@ def _prepare_public_runtime(
                 expected = manifest["source_row_counts"][table]
                 if actual != expected:
                     raise RuntimeError(f"{table} 组装行数不一致：{actual} != {expected}")
+        os.replace(temporary, runtime_path)
+        version_temporary = version_path.with_suffix(".version.tmp")
+        version_temporary.write_text(version + "\n", encoding="utf-8")
+        os.replace(version_temporary, version_path)
+        _report_progress(progress_callback, 1.0, "公开数据加载完成")
+        return runtime_path
+    except Exception:
+        temporary.unlink(missing_ok=True)
+        raise
+
+
+def _prepare_from_bundle(
+    data_dir: Path,
+    runtime_path: Path,
+    version_path: Path,
+    version: str,
+    manifest: dict,
+    bundle: dict,
+    progress_callback: ProgressCallback | None,
+) -> Path:
+    bundle_path = data_dir / str(bundle["path"])
+    if not bundle_path.is_file():
+        raise FileNotFoundError(f"公开运行库压缩包缺失：{bundle['path']}")
+    _report_progress(progress_callback, 0.12, "正在校验压缩运行库")
+    if _sha256(bundle_path) != bundle["sha256"]:
+        raise RuntimeError("公开运行库压缩包哈希不匹配")
+
+    runtime_path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = runtime_path.with_suffix(".tmp")
+    temporary.unlink(missing_ok=True)
+    try:
+        _report_progress(progress_callback, 0.45, "正在解压公开运行库")
+        with gzip.open(bundle_path, "rb") as source, temporary.open("wb") as destination:
+            shutil.copyfileobj(source, destination, 1024 * 1024)
+        if temporary.stat().st_size != int(bundle["uncompressed_size_bytes"]):
+            raise RuntimeError("公开运行库解压大小不一致")
+
+        _report_progress(progress_callback, 0.82, "正在检查数据库完整性")
+        with closing(sqlite3.connect(temporary)) as conn:
+            if conn.execute("PRAGMA integrity_check").fetchone()[0] != "ok":
+                raise RuntimeError("解压后的公开运行库完整性检查失败")
+            for table in SHARDED_TABLES:
+                actual = conn.execute(f'SELECT COUNT(*) FROM "{table}"').fetchone()[0]
+                expected = manifest["source_row_counts"][table]
+                if actual != expected:
+                    raise RuntimeError(f"{table} 解压行数不一致：{actual} != {expected}")
+
         os.replace(temporary, runtime_path)
         version_temporary = version_path.with_suffix(".version.tmp")
         version_temporary.write_text(version + "\n", encoding="utf-8")

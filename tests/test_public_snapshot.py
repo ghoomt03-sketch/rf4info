@@ -69,11 +69,15 @@ class PublicSnapshotTests(unittest.TestCase):
             manifest = export_public_snapshot(source, output_dir)
             stored_manifest = json.loads((output_dir / "manifest.json").read_text(encoding="utf-8"))
             self.assertEqual(stored_manifest, manifest)
-            self.assertEqual(manifest["schema_version"], 2)
+            self.assertEqual(manifest["schema_version"], 3)
             self.assertEqual(len([item for item in manifest["files"] if "week" in item]), 1)
             for item in manifest["files"]:
                 path = output_dir / item["path"]
                 self.assertEqual(hashlib.sha256(path.read_bytes()).hexdigest(), item["sha256"])
+            bundle = manifest["runtime_bundle"]
+            bundle_path = output_dir / bundle["path"]
+            self.assertEqual(hashlib.sha256(bundle_path.read_bytes()).hexdigest(), bundle["sha256"])
+            self.assertGreater(bundle["uncompressed_size_bytes"], bundle["size_bytes"])
 
             progress_updates = []
             prepare_public_runtime(
@@ -82,7 +86,7 @@ class PublicSnapshotTests(unittest.TestCase):
                 progress_callback=lambda value, text: progress_updates.append((value, text)),
             )
             self.assertEqual(progress_updates[-1], (1.0, "公开数据加载完成"))
-            self.assertTrue(any("组装周数据" in text for _, text in progress_updates))
+            self.assertTrue(any("解压公开运行库" in text for _, text in progress_updates))
             self.assertEqual(progress_updates, sorted(progress_updates, key=lambda item: item[0]))
             with closing(sqlite3.connect(runtime)) as conn:
                 self.assertIsNone(conn.execute(
