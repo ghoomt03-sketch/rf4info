@@ -23,6 +23,7 @@ data/public.sqlite3.tmp
 data/public-manifest.json
 data/public-manifest.json.tmp
 .public_runtime/
+.public-publish-*/
 public_data.previous/
 .public_data-*/
 *.log

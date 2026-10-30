@@ -201,7 +201,10 @@ def publish(*, push: bool = True) -> str:
                 if head != remote_head:
                     raise RuntimeError("本地 main 与 origin/main 不一致，拒绝自动发布")
 
-            with tempfile.TemporaryDirectory(prefix="rf4-public-publish-") as folder:
+            # 公开库可能较大；使用项目所在数据盘，避免系统临时盘空间不足。
+            with tempfile.TemporaryDirectory(
+                prefix=".public-publish-", dir=ROOT_DIR
+            ) as folder:
                 candidate = Path(folder) / "public_data"
                 manifest = export_public_snapshot(DEFAULT_SOURCE, candidate)
                 current = _load_manifest(PUBLIC_DIR)
