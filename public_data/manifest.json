@@ -1,29 +1,29 @@
 {
   "schema_version": 3,
-  "generated_at": "2026-10-31T12:22:57.705819+08:00",
+  "generated_at": "2026-10-31T14:23:20.191935+08:00",
   "core": "core.sqlite3",
   "runtime_bundle": {
     "path": "runtime.sqlite3.gz",
-    "size_bytes": 13604508,
-    "uncompressed_size_bytes": 85630976,
-    "sha256": "5408e53e413e1351e3a35b1021479f0081c254c39e23ea2e7a65fef1974d85da"
+    "size_bytes": 13743763,
+    "uncompressed_size_bytes": 86454272,
+    "sha256": "e6f14cbf39e7ae2acb5fdc57e1391886e30c1c07a583bef06f6ede32c031300c"
   },
   "files": [
     {
       "path": "core.sqlite3",
-      "size_bytes": 23052288,
-      "sha256": "f0936e4c23f0aeeb5fd3f8ecca69e2e5eed84ff8fc25d3eff93a9960564faef6",
+      "size_bytes": 23285760,
+      "sha256": "3d16e3d98679aceb5a8584b30dca16b574df27e46f30ec25fbfb8882fa63b657",
       "row_counts": {
         "behavior_regimes": 0,
         "catch_records": 0,
         "community_spots": 0,
-        "earnings_samples": 2461,
+        "earnings_samples": 2481,
         "map_assets": 18,
         "maps": 19,
         "official_weekly_records": 0,
         "refresh_coverage": 10,
-        "refresh_runs": 962,
-        "weather_forecasts": 20757
+        "refresh_runs": 976,
+        "weather_forecasts": 21027
       }
     },
     {
@@ -130,36 +130,36 @@
     {
       "path": "weeks/2026-W43.sqlite3",
       "size_bytes": 10694656,
-      "sha256": "6c96a295f4d55b0c3ec95f0a7dea4701ca622bdb1471ba140cac941566da6e27",
+      "sha256": "4085bc21a25c0b008edc0a0e58cf18188ff080cec28cfcd15effe1b4c20127cb",
       "week": "2026-W43",
       "row_counts": {
         "catch_records": 10083,
         "community_spots": 20491,
-        "official_weekly_records": 1230
+        "official_weekly_records": 1229
       }
     },
     {
       "path": "weeks/2026-W44.sqlite3",
-      "size_bytes": 38981632,
-      "sha256": "ce747bb954be6b610ff9cc0554f0abd0e512172fdcedacb06d1172591caa19cf",
+      "size_bytes": 39505920,
+      "sha256": "ab005dc925a89e688f6cb86a2f928a417db81bd35b14239e18ba650b7e91a716",
       "week": "2026-W44",
       "row_counts": {
-        "catch_records": 91640,
-        "community_spots": 22956,
-        "official_weekly_records": 273
+        "catch_records": 93139,
+        "community_spots": 22999,
+        "official_weekly_records": 274
       }
     }
   ],
   "source_row_counts": {
     "behavior_regimes": 0,
-    "catch_records": 109506,
-    "community_spots": 43889,
-    "earnings_samples": 2461,
+    "catch_records": 111005,
+    "community_spots": 43932,
+    "earnings_samples": 2481,
     "map_assets": 18,
     "maps": 19,
     "official_weekly_records": 1529,
     "refresh_coverage": 10,
-    "refresh_runs": 962,
-    "weather_forecasts": 20757
+    "refresh_runs": 976,
+    "weather_forecasts": 21027
   }
 }
