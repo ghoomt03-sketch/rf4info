@@ -1,29 +1,29 @@
 {
   "schema_version": 3,
-  "generated_at": "2026-10-31T17:22:57.803103+08:00",
+  "generated_at": "2026-10-31T18:23:06.135826+08:00",
   "core": "core.sqlite3",
   "runtime_bundle": {
     "path": "runtime.sqlite3.gz",
-    "size_bytes": 13965511,
-    "uncompressed_size_bytes": 87732224,
-    "sha256": "7a6a43513821bb106158851445af364468f0da287bcf860f4a561199ff993848"
+    "size_bytes": 14022856,
+    "uncompressed_size_bytes": 88117248,
+    "sha256": "08b62363b1d204dc35d2207acbe73858dea6de5187ee40225c3acdad1f636876"
   },
   "files": [
     {
       "path": "core.sqlite3",
-      "size_bytes": 23629824,
-      "sha256": "aef109b73e868b3cd8592b61a025261ce45d035e00142ea030553f3b9b986544",
+      "size_bytes": 23769088,
+      "sha256": "e244b3dcee6fbc17d7336b1078a2906f9cca3e01e1c4c4f0bc6c9f7f9020c786",
       "row_counts": {
         "behavior_regimes": 0,
         "catch_records": 0,
         "community_spots": 0,
-        "earnings_samples": 2508,
+        "earnings_samples": 2519,
         "map_assets": 18,
         "maps": 19,
         "official_weekly_records": 0,
         "refresh_coverage": 10,
-        "refresh_runs": 995,
-        "weather_forecasts": 21441
+        "refresh_runs": 1001,
+        "weather_forecasts": 21585
       }
     },
     {
@@ -140,11 +140,11 @@
     },
     {
       "path": "weeks/2026-W44.sqlite3",
-      "size_bytes": 40329216,
-      "sha256": "4cea007765bed67b9afef46b7b5a154a5c6aa50c85fc75bb8cda626a9db15748",
+      "size_bytes": 40546304,
+      "sha256": "50b9aaa0c5ca2397780edd7f807ff9c4acd2c90d869abf72b2eba255ac79861e",
       "week": "2026-W44",
       "row_counts": {
-        "catch_records": 95532,
+        "catch_records": 96163,
         "community_spots": 22999,
         "official_weekly_records": 274
       }
@@ -152,14 +152,14 @@
   ],
   "source_row_counts": {
     "behavior_regimes": 0,
-    "catch_records": 113398,
+    "catch_records": 114029,
     "community_spots": 43932,
-    "earnings_samples": 2508,
+    "earnings_samples": 2519,
     "map_assets": 18,
     "maps": 19,
     "official_weekly_records": 1529,
     "refresh_coverage": 10,
-    "refresh_runs": 995,
-    "weather_forecasts": 21441
+    "refresh_runs": 1001,
+    "weather_forecasts": 21585
   }
 }
