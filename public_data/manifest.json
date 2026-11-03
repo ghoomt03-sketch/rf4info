@@ -1,23 +1,23 @@
 {
   "schema_version": 4,
-  "generated_at": "2026-11-03T20:23:05.246106+08:00",
+  "generated_at": "2026-11-03T21:23:06.459720+08:00",
   "core": "core.sqlite3",
   "runtime_bundle": {
     "path": "runtime.sqlite3.gz",
-    "size_bytes": 2638932,
-    "uncompressed_size_bytes": 16531456,
-    "sha256": "df554a3a2df7e1356c22576a4453186cca4789411613d6c3acf933bf8c49cf83",
+    "size_bytes": 2625965,
+    "uncompressed_size_bytes": 16461824,
+    "sha256": "bcdde68e889498e491fe4c047ddc2eb4bc0ecb385b59eee09d2fe1d235c8ec86",
     "row_counts": {
       "behavior_regimes": 0,
-      "catch_records": 27535,
+      "catch_records": 27351,
       "community_spots": 6751,
-      "earnings_samples": 7,
+      "earnings_samples": 5,
       "map_assets": 18,
       "maps": 19,
       "model_condition_history_coverage": 1,
       "model_history_coverage": 3,
       "model_map_temperature_baselines": 18,
-      "model_recent_farm_earnings": 40,
+      "model_recent_farm_earnings": 41,
       "model_source_inventory": 5,
       "model_trophy_periods": 503,
       "official_weekly_records": 285,
@@ -30,19 +30,19 @@
   "files": [
     {
       "path": "core.sqlite3",
-      "size_bytes": 2760704,
-      "sha256": "f45e154f19def2662e3bd5b51da27d16c4232d6790bbddbd71b5ab3de0f4b9dc",
+      "size_bytes": 2764800,
+      "sha256": "0a68bd9f8967ca9758dc1be549e2e9836c55c3a634294c4f77f758bbeaf3966d",
       "row_counts": {
         "behavior_regimes": 0,
         "catch_records": 0,
         "community_spots": 0,
-        "earnings_samples": 7,
+        "earnings_samples": 5,
         "map_assets": 18,
         "maps": 19,
         "model_condition_history_coverage": 1,
         "model_history_coverage": 3,
         "model_map_temperature_baselines": 18,
-        "model_recent_farm_earnings": 40,
+        "model_recent_farm_earnings": 41,
         "model_source_inventory": 5,
         "model_trophy_periods": 503,
         "official_weekly_records": 0,
@@ -177,11 +177,11 @@
     },
     {
       "path": "weeks/2026-W45.sqlite3",
-      "size_bytes": 10559488,
-      "sha256": "21ebd585320dfaa073201651eeb2e1076aa9645f4de0edd4da4d09b3330c0be3",
+      "size_bytes": 10883072,
+      "sha256": "f743944409f8c57549a8663a296697f4227859630e3d30d4818c87ec77b416a9",
       "week": "2026-W45",
       "row_counts": {
-        "catch_records": 24314,
+        "catch_records": 25238,
         "community_spots": 6470,
         "official_weekly_records": 253
       }
@@ -189,27 +189,27 @@
   ],
   "source_row_counts": {
     "behavior_regimes": 0,
-    "catch_records": 158813,
+    "catch_records": 159737,
     "community_spots": 53465,
-    "earnings_samples": 3065,
+    "earnings_samples": 3070,
     "map_assets": 18,
     "maps": 19,
     "official_weekly_records": 1814,
     "refresh_coverage": 10,
-    "refresh_runs": 1481,
-    "weather_forecasts": 31919
+    "refresh_runs": 1487,
+    "weather_forecasts": 32063
   },
   "runtime_row_counts": {
     "behavior_regimes": 0,
-    "catch_records": 27535,
+    "catch_records": 27351,
     "community_spots": 6751,
-    "earnings_samples": 7,
+    "earnings_samples": 5,
     "map_assets": 18,
     "maps": 19,
     "model_condition_history_coverage": 1,
     "model_history_coverage": 3,
     "model_map_temperature_baselines": 18,
-    "model_recent_farm_earnings": 40,
+    "model_recent_farm_earnings": 41,
     "model_source_inventory": 5,
     "model_trophy_periods": 503,
     "official_weekly_records": 285,
@@ -223,7 +223,7 @@
     "model_history_coverage": 3,
     "model_condition_history_coverage": 1,
     "model_source_inventory": 5,
-    "model_recent_farm_earnings": 40,
+    "model_recent_farm_earnings": 41,
     "model_trophy_periods": 503
   }
 }
