@@ -94,7 +94,9 @@ def assess_refresh(source: str, rows: Iterable[dict], previous: datetime | None)
         from .collectors.rf4stat_posts import load_posts_state
         state = load_posts_state()
         history_status = state.get("history_status", "pending")
-        status = "complete" if history_status == "target_boundary" else "backfilling"
+        recent_status = state.get('recent_status')
+        status = ('gap' if recent_status == 'window_limited' else
+                  'complete' if history_status == 'target_boundary' and recent_status == 'overlap' else 'backfilling')
         note = state.get("stop_reason") or "历史分页游标仍在续采。"
         overlap = sum(str(row.get("source_key") or "") in prior_keys for row in rows)
         return [_record("rf4stat_posts", source, status, previous, rows, overlap, note, "reported_at")]

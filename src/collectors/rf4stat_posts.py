@@ -74,6 +74,16 @@ def parse_page_response(status: int, html: str, page: int) -> BeautifulSoup:
         raise BrowserCollectionError(f"帖子分页返回 HTTP {status}，停止本批；保留续采位置。")
     if soup.select_one('.post-item[data-post-id]'):
         return soup
+    ads = soup.select('.posts-inpage-ad')
+    if ads and not soup.get_text(strip=True) and not soup.select_one('form,input,button,script'):
+        remainder = BeautifulSoup(str(soup), 'lxml')
+        for ad in remainder.select('.posts-inpage-ad'):
+            ad.decompose()
+        if not remainder.get_text(strip=True) and not remainder.select('body > :not(div):not(br)') and not any(
+            tag.name not in {'html', 'body', 'br'} for tag in remainder.find_all(True)
+        ):
+            soup.__dict__['_rf4stat_page_kind'] = 'ad_only'
+            return soup
     # A real empty AJAX fragment is the only unambiguous public pagination end.
     if not html.strip():
         return soup
@@ -139,9 +149,10 @@ def parse_posts(soup: BeautifulSoup, collected: datetime, fish_catalog=None, bai
             name = icon.select_one('[data-filter=fish]')
             if not link or not name:
                 continue
-            fish_id = link['href'].rstrip('/').rsplit('/', 1)[-1]
-            if not re.fullmatch(r'[A-Za-z0-9_-]+', fish_id):
+            fish_link = re.fullmatch(r'fish/([A-Za-z0-9][A-Za-z0-9_.-]*)/?', link['href'])
+            if not fish_link or '..' in fish_link[1]:
                 continue
+            fish_id = fish_link[1]
             fish_items[fish_id] = name.get_text(' ', strip=True)
         for fish_id, fish_raw in fish_items.items():
             _, fish_name, fish_ok = canonical_fish(fish_raw, fish_id, catalog=fish_catalog)
@@ -181,7 +192,7 @@ def parse_posts(soup: BeautifulSoup, collected: datetime, fish_catalog=None, bai
     return result
 
 
-def collect_pages(fetch, max_pages=10, request_delay=3.0, writer=None) -> PostBatch:
+def collect_pages(fetch, max_pages=10, request_delay=3.0, writer=None, known_post_ids=None) -> PostBatch:
     """Commit complete pages before advancing the persistent historical cursor."""
     writer = upsert_community_spots if writer is None else writer
     max_pages = max(1, min(10, max_pages))
@@ -189,21 +200,32 @@ def collect_pages(fetch, max_pages=10, request_delay=3.0, writer=None) -> PostBa
     state = load_posts_state()
     if not state:
         state = _initial_state(now)
+    if state.get('history_status') == 'public_window_paused':
+        state.update(history_status='pending', next_page=4, last_history_oldest=None, stalled_pages=0)
     cutoff = datetime.fromisoformat(state['cutoff'])
-    state.update(last_error='', batch_pages=0, batch_rows=0, phase='recent')
+    state.update(last_error='', batch_pages=0, batch_rows=0, requested_pages=0,
+                 phase='recent', stop_reason='正在检查新帖及续采历史')
     saved = PostBatch()
     fingerprints = set()
     seen_pages = set()
+    requested_pages = set()
 
     def process(page: int, historical: bool) -> bool:
-        if seen_pages:
+        if requested_pages:
             time.sleep(max(3.0, request_delay))
-        state.update(current_page=page, phase='history' if historical else 'recent')
+        requested_pages.add(page)
+        state.update(current_page=page, requested_pages=len(requested_pages), phase='history' if historical else 'recent')
         _save_state(state)
         soup = fetch(page)
         posts = soup.select('.post-item[data-post-id]')
         if not posts:
-            state.update(history_status='source_end', stop_reason='公开分页返回空页，尚不能保证覆盖90天')
+            if soup.__dict__.get('_rf4stat_page_kind') == 'ad_only':
+                state.update(history_status='public_window_paused', paused_page=page,
+                             stop_reason=f'第{page}页仅返回广告、无公开帖子；当前公开窗口暂停，未认定全部历史结束；下批重新检查公开窗口')
+                if not historical:
+                    state['recent_status'] = 'window_limited'
+            else:
+                state.update(history_status='source_end', stop_reason='公开分页返回空页，尚不能保证覆盖90天')
             _save_state(state)
             return False
         ids = sorted({str(p.get('data-post-id')) for p in posts})
@@ -236,7 +258,7 @@ def collect_pages(fetch, max_pages=10, request_delay=3.0, writer=None) -> PostBa
             prior_min = datetime.fromisoformat(state.get('oldest_at') or oldest.isoformat())
             prior_max = datetime.fromisoformat(state.get('latest_at') or max(dates).isoformat())
             state.update(oldest_at=min(prior_min, oldest).isoformat(), latest_at=max(prior_max, max(dates)).isoformat())
-            if historical or page >= next_before:
+            if historical or (known_post_ids is None and page >= next_before):
                 state['last_history_oldest'] = oldest.isoformat()
         if oldest and oldest <= cutoff:
             state.update(history_status='target_boundary', stop_reason='已到首次补采锚点前90天边界；不保证分页无缺漏')
@@ -246,30 +268,60 @@ def collect_pages(fetch, max_pages=10, request_delay=3.0, writer=None) -> PostBa
         return True
 
     try:
+        recent_open = True
+        boundary = set(state.get('recent_boundary_ids', [])) or set(known_post_ids or [])
+        overlap = False
         for page in range(1, min(3, max_pages) + 1):
             if not process(page, False):
+                recent_open = False
                 break
-        else:
-            if state.get('history_status') not in ('target_boundary', 'source_end'):
-                start = max(4, int(state['next_page']) - 1)
-                for page in range(start, start + max_pages - len(seen_pages)):
-                    if not process(page, True):
-                        break
+            overlap |= bool(boundary.intersection(state['last_page_ids']))
+        if recent_open and known_post_ids is not None and boundary:
+            page = max(4, int(state.get('recent_next_page', 4)))
+            while not overlap and len(requested_pages) < max_pages:
+                if not process(page, False):
+                    recent_open = False
+                    break
+                overlap = bool(boundary.intersection(state['last_page_ids']))
+                page += 1
+            if recent_open:
+                if overlap:
+                    state.update(recent_status='overlap', recent_next_page=4, recent_boundary_ids=[])
                 else:
-                    state.update(history_status='pending', stop_reason='本批页数上限已到，下次刷新继续历史补采')
+                    state.update(recent_status='backfilling', recent_next_page=page,
+                                 recent_boundary_ids=sorted(boundary),
+                                 stop_reason='本批页数上限已到，新帖尚未衔接旧缓存，下批继续新帖补采')
+                    recent_open = False
+        if recent_open and state.get('history_status') not in ('target_boundary', 'source_end', 'public_window_paused'):
+            page = max(4, int(state['next_page']) - 1)
+            while len(requested_pages) < max_pages:
+                if page in requested_pages:
+                    page += 1
+                    continue
+                if not process(page, True):
+                    break
+                page += 1
+            else:
+                state.update(history_status='pending', stop_reason='本批页数上限已到，下次刷新继续历史补采')
         state['phase'] = 'idle'
+        state['requested_pages'] = len(requested_pages)
         _save_state(state)
     except Exception as exc:
-        state.update(phase='failed', last_error=str(exc), stop_reason='采集中断，保留已提交页和续采位置')
+        state.update(phase='failed', last_error=str(exc), requested_pages=len(requested_pages),
+                     stop_reason='采集中断，保留已提交页和续采位置')
         _save_state(state)
         raise PostsCollectionError(f'{exc} 本批已保存{len(seen_pages)}个新请求页、{len(saved)}条帖子鱼种证据；下一历史页{state["next_page"]}。', saved) from exc
-    saved.message = f'本批{len(seen_pages)}页、{len(saved)}条帖子鱼种证据；{state.get("stop_reason", "")}；下一历史页{state["next_page"]}'
+    recent_label = {'overlap': '已衔接既有帖子', 'backfilling': '缺口补采中', 'window_limited': '当前公开窗口不足'}.get(state.get('recent_status'), '未判断')
+    saved.message = f'本批{len(seen_pages)}个帖子页、{len(saved)}条鱼种证据（非新增总数）；新帖{recent_label}；{state.get("stop_reason", "")}；下一历史页{state["next_page"]}'
     return saved
 
 
 def collect_reader(reader, max_pages=10) -> PostBatch:
     """Retain already rendered public posts even when the next request is blocked."""
     now = datetime.now(timezone.utc)
+    known = read_frame("""SELECT source_record_id FROM community_spots WHERE source_name=?
+        GROUP BY source_record_id ORDER BY MAX(reported_at) DESC LIMIT 120""", (SOURCE_NAME,))
+    known_ids = set(known['source_record_id'].dropna().astype(str))
     soup = reader.visible_posts()
     visible_source_url = getattr(getattr(reader, 'page', None), 'url', None)
     visible_rows = parse_posts(
@@ -299,7 +351,7 @@ def collect_reader(reader, max_pages=10) -> PostBatch:
         )
         return combined
     try:
-        batch = collect_pages(reader.posts_page, max_pages=max_pages)
+        batch = collect_pages(reader.posts_page, max_pages=max_pages, known_post_ids=known_ids)
     except PostsCollectionError as exc:
         raise PostsCollectionError(
             f'已从窗口现有内容保存{len(visible_ids)}篇帖子、{len(visible_rows)}条鱼种证据（不代表刚从网络刷新）。{exc}',
@@ -322,6 +374,6 @@ def collect_rf4stat_posts() -> PostBatch:
 
 def posts_progress() -> dict:
     state = load_posts_state()
-    frame = read_frame('SELECT COUNT(DISTINCT source_record_id) AS posts, MIN(reported_at) AS oldest, MAX(reported_at) AS latest FROM community_spots WHERE source_name=?', (SOURCE_NAME,))
+    frame = read_frame('SELECT COUNT(DISTINCT source_record_id) AS posts, COUNT(*) AS evidence_rows, MIN(reported_at) AS oldest, MAX(reported_at) AS latest FROM community_spots WHERE source_name=?', (SOURCE_NAME,))
     state['inventory'] = frame.iloc[0].to_dict()
     return state

@@ -9,6 +9,7 @@ from datetime import timedelta
 import pandas as pd
 
 from .config import FISH_ZH, WEATHER_ZH
+from .catalog import rf4db_fish_catalog
 from .db import read_frame
 from .habit_evidence import all_source_habit_records, rf4stat_habit_records, source_breakdown
 
@@ -30,6 +31,68 @@ def latest_weather() -> pd.DataFrame:
     return frame
 
 
+def weather_timeline_table(frame: pd.DataFrame) -> pd.DataFrame:
+    """Collapse hourly forecasts into one aligned, pipe-delimited row per map."""
+    columns = ["地图", "D", "现实窗口", "天气", "预报参考温度", "风速", "采集时间", "来源"]
+    if frame is None or frame.empty:
+        return pd.DataFrame(columns=columns)
+
+    timeline = frame.copy()
+    timeline["_slot"] = pd.to_datetime(
+        timeline.get("forecast_slot"), format="mixed", errors="coerce", utc=True
+    )
+    timeline["_slot_local"] = timeline["_slot"].dt.tz_convert("Asia/Shanghai")
+    timeline["_map_order"] = pd.to_numeric(
+        timeline.get("unlock_level", pd.Series(index=timeline.index, dtype="float64")),
+        errors="coerce",
+    ).fillna(9999)
+    timeline = timeline.sort_values(
+        ["_map_order", "map_name", "_slot", "horizon"], na_position="last"
+    )
+
+    def joined(group: pd.DataFrame, column: str, formatter=None) -> str:
+        values = []
+        source = group[column] if column in group else [None] * len(group)
+        for value in source:
+            if pd.isna(value) or str(value).strip() == "":
+                values.append("—")
+            elif formatter:
+                values.append(formatter(value))
+            else:
+                values.append(str(value).strip())
+        return "|".join(values)
+
+    def compact_number(value) -> str:
+        return f"{float(value):g}"
+
+    rows = []
+    for (_, map_name), group in timeline.groupby(["map_id", "map_name"], sort=False, dropna=False):
+        collected = pd.to_datetime(
+            group.get("collected_at"), format="mixed", errors="coerce", utc=True
+        )
+        latest_collected = collected.max()
+        sources = list(dict.fromkeys(
+            value for value in group.get("source_url", pd.Series(dtype="object")).dropna().astype(str)
+            if value.strip()
+        ))
+        rows.append({
+            "地图": str(map_name),
+            "D": joined(group, "horizon", lambda value: str(int(float(value)))),
+            "现实窗口": "|".join(
+                str(int(value.hour)) if pd.notna(value) else "—" for value in group["_slot_local"]
+            ),
+            "天气": joined(group, "天气"),
+            "预报参考温度": joined(group, "forecast_day_temperature", compact_number),
+            "风速": joined(group, "wind_speed", compact_number),
+            "采集时间": (
+                latest_collected.tz_convert("Asia/Shanghai").strftime("%Y-%m-%d %H:%M")
+                if pd.notna(latest_collected) else "—"
+            ),
+            "来源": " | ".join(sources),
+        })
+    return pd.DataFrame(rows, columns=columns)
+
+
 def latest_earnings() -> pd.DataFrame:
     frame = read_frame(
         """WITH latest AS (SELECT MAX(collected_at) AS collected_at FROM earnings_samples)
@@ -42,6 +105,104 @@ def latest_earnings() -> pd.DataFrame:
     if not frame.empty:
         frame["composition"] = frame["composition"].map(lambda value: _chinese_or_pending(value, "收益构成"))
     return frame
+
+
+FARM_STAPLE_FISH_IDS = frozenset({"bream", "n.pike", "asp", "vobla", "taran"})
+FARM_VOLATILE_FISH_IDS = frozenset({"x_gladius", "thynnus_t", "cetorhinus_m", "somniosus_m", "lamna_n"})
+FARM_EARNINGS_LOOKBACK_DAYS = 14
+
+
+def recent_farm_earnings() -> pd.DataFrame:
+    """Return current earnings plus recent high-volume point hours for farm ranking."""
+    frame = read_frame(
+        """SELECT e.*, m.name_zh AS map_name, m.unlock_level
+        FROM earnings_samples e LEFT JOIN maps m ON m.map_id=e.map_id
+        ORDER BY e.collected_at DESC, e.rank_no"""
+    )
+    if frame.empty:
+        return frame
+    collected = pd.to_datetime(frame["collected_at"], errors="coerce", utc=True)
+    anchor = collected.max()
+    if pd.isna(anchor):
+        return frame.iloc[0:0].copy()
+    frame = frame[collected.ge(anchor - timedelta(days=FARM_EARNINGS_LOOKBACK_DAYS))].copy()
+    frame["point_label"] = frame.apply(
+        lambda row: earnings_point_group(row["map_id"], row.get("coordinates")), axis=1
+    )
+    frame = frame[frame["point_label"].notna()].copy()
+    if frame.empty:
+        return frame
+    latest_batch = pd.to_datetime(frame["collected_at"], errors="coerce", utc=True).eq(anchor)
+    high_volume = pd.to_numeric(frame["catch_count"], errors="coerce").fillna(0).ge(80)
+    frame = frame[latest_batch | high_volume].copy()
+    frame["earnings_is_current"] = latest_batch[latest_batch | high_volume]
+    frame["earnings_age_days"] = (
+        anchor - pd.to_datetime(frame["collected_at"], errors="coerce", utc=True)
+    ).dt.total_seconds().div(86400)
+    frame["_collected"] = pd.to_datetime(frame["collected_at"], errors="coerce", utc=True)
+    frame = frame.sort_values(["_collected", "rank_no"], ascending=[False, True]).drop_duplicates(
+        ["map_id", "point_label"], keep="first"
+    )
+    return frame.drop(columns="_collected")
+
+
+def stable_farm_earnings(sample: pd.Series | dict) -> dict:
+    """Remove volatile trophy-fish contribution from an earnings-hour sample."""
+    try:
+        species = json.loads(sample.get("species_composition") or "[]")
+    except (TypeError, json.JSONDecodeError):
+        species = []
+    total_catches = int(sample.get("catch_count") or 0)
+    raw_income = float(sample.get("silver_per_hour") or 0)
+    volatile = [item for item in species if str(item.get("fish_id") or "") in FARM_VOLATILE_FISH_IDS]
+    volatile_catches = sum(int(item.get("count") or 0) for item in volatile)
+    unknown_value = any(item.get("value_pct") is None for item in volatile)
+    volatile_value_pct = sum(float(item.get("value_pct") or 0) for item in volatile)
+    stable_income = None if volatile and unknown_value else raw_income * max(0.0, 1 - volatile_value_pct / 100)
+    stable_catches = max(0, total_catches - volatile_catches)
+    if not volatile:
+        note = "未发现偶发高价值鱼"
+    elif unknown_value:
+        note = "含偶发高价值鱼且价值贡献未知，稳定银币不计分"
+    else:
+        note = f"已扣除偶发高价值鱼 {volatile_catches} 尾、价值贡献 {volatile_value_pct:.1f}%"
+    return {
+        "stable_income": stable_income,
+        "stable_catches": stable_catches,
+        "volatile_catches": volatile_catches,
+        "volatile_value_pct": volatile_value_pct if not unknown_value else None,
+        "stability_note": note,
+        "species": species,
+    }
+
+
+def _farm_fish_name(item: dict, catalog: dict[str, str]) -> str:
+    fish_id = str(item.get("fish_id") or "")
+    return catalog.get(fish_id, _chinese_or_pending(item.get("fish_name_en"), "鱼种"))
+
+
+def farm_earnings_economic_fish(species: list[dict], limit: int = 3) -> list[str]:
+    """Rank non-volatile fish from one earnings hour for the farm label."""
+    catalog = rf4db_fish_catalog()
+    eligible = [
+        item for item in species
+        if str(item.get("fish_id") or "") not in FARM_VOLATILE_FISH_IDS
+        and int(item.get("count") or 0) > 0
+    ]
+    eligible.sort(
+        key=lambda item: (
+            item.get("value_pct") is not None,
+            float(item.get("value_pct") or 0),
+            int(item.get("count") or 0),
+        ),
+        reverse=True,
+    )
+    return [_farm_fish_name(item, catalog) for item in eligible[:limit]]
+
+
+def farm_recommendation_label(map_name: str, point_label: str, main_fish: str) -> str:
+    base = f"{map_name} · {point_label}"
+    return f"{base}（主要经济鱼种：{main_fish}）" if main_fish else base
 
 
 def latest_map_assets() -> pd.DataFrame:
@@ -145,6 +306,105 @@ def map_community_evidence_table() -> pd.DataFrame:
             ).nunique(),
             "community_sources": " / ".join(sorted(group["source_name"].unique())),
             "community_latest": times.max().isoformat(),
+        })
+    return pd.DataFrame(rows)
+
+
+def farm_map_community_evidence_table() -> pd.DataFrame:
+    """Map background for farm ranking, excluding trophy and post-only evidence."""
+    columns = [
+        "map_id", "community_records", "community_points", "community_sources", "community_latest"
+    ]
+    frame = recent_community_spots()
+    if frame.empty:
+        return pd.DataFrame(columns=columns)
+    frame = frame[
+        ~frame["fish_id"].isin(FARM_VOLATILE_FISH_IDS)
+        & ~frame["quality_label"].eq("奖杯标记")
+        & ~frame["source_name"].eq("RF4-STAT 帖子")
+    ].copy()
+    rows = []
+    for map_id, group in frame.groupby("map_id"):
+        times = pd.to_datetime(group["reported_at"], errors="coerce", utc=True).fillna(
+            pd.to_datetime(group["collected_at"], errors="coerce", utc=True)
+        )
+        rows.append({
+            "map_id": map_id,
+            "community_records": len(group.drop_duplicates(["source_name", "source_record_id"])),
+            "community_points": group["coordinate"].fillna(
+                group.get("spot_label", pd.Series(index=group.index, dtype="object"))
+            ).nunique(),
+            "community_sources": " / ".join(sorted(group["source_name"].dropna().unique())),
+            "community_latest": times.max().isoformat() if times.notna().any() else "",
+        })
+    return pd.DataFrame(rows, columns=columns)
+
+
+def farm_community_candidates() -> pd.DataFrame:
+    """Build point-level freshwater/high-frequency farm observations without inventing hourly yield."""
+    frame = recent_community_spots()
+    if frame.empty:
+        return pd.DataFrame()
+    frame = frame[
+        ~frame["fish_id"].isin(FARM_VOLATILE_FISH_IDS)
+        & ~frame["quality_label"].eq("奖杯标记")
+        & ~frame["source_name"].eq("RF4-STAT 帖子")
+    ].copy()
+    if frame.empty:
+        return pd.DataFrame()
+    frame["point_label"] = frame.apply(
+        lambda row: point_group(row["map_id"], row.get("coordinate")) or row.get("spot_label"), axis=1
+    )
+    frame = frame[frame["point_label"].notna()].copy()
+    rows = []
+    for (map_id, point_label), group in frame.groupby(["map_id", "point_label"]):
+        distinct = group.drop_duplicates(["source_name", "source_record_id"])
+        rf4map = group[group["source_name"].eq("RF4MAP")]
+        rf4map_max = pd.to_numeric(rf4map["catch_count"], errors="coerce").max() if not rf4map.empty else 0
+        rf4map_count = int(rf4map_max) if pd.notna(rf4map_max) else 0
+        point_records = int(len(distinct))
+        staple = group[group["fish_id"].isin(FARM_STAPLE_FISH_IDS)]
+        has_staple = not staple.empty
+        if not (has_staple or point_records >= 5 or rf4map_count >= 10):
+            continue
+        fish_records = group.drop_duplicates(["source_name", "source_record_id", "fish_id"])
+        fish_counts = fish_records.groupby(["fish_id", "fish_name"], as_index=False).size()
+        fish_counts = fish_counts.sort_values(["size", "fish_name"], ascending=[False, True])
+        main_fish_names = fish_counts["fish_name"].astype(str).head(3).tolist()
+        dominant_id = str(fish_counts.iloc[0]["fish_id"])
+        dominant = str(fish_counts.iloc[0]["fish_name"])
+        evidence_time = pd.to_datetime(group["reported_at"], errors="coerce", utc=True).fillna(
+            pd.to_datetime(group["collected_at"], errors="coerce", utc=True)
+        )
+        source_urls = group["source_url"].dropna().astype(str)
+        quantity = max(point_records, rf4map_count)
+        rows.append({
+            "map_id": map_id,
+            "point_label": str(point_label),
+            "fish_id": dominant_id,
+            "target_fish": dominant,
+            "main_economic_fish": "、".join(main_fish_names),
+            "recent_catches": quantity,
+            "stable_catch_count": 0,
+            "point_record_count": point_records,
+            "reported_point_catches": rf4map_count,
+            "farm_quantity_value": quantity,
+            "farm_quantity_label": f"公开点位记录 {point_records} 条；RF4MAP榜单渔获数 {rf4map_count}",
+            "farm_candidate_kind": "community",
+            "reference_income": None,
+            "income_samples": 0,
+            "income_scope": "近期公开高频点位（无稳定银币样本）",
+            "stability_note": "仅统计非奖杯、非帖子普通点位证据；社区数量不等同于一小时尾数或稳定收益",
+            "recent_stars": 0,
+            "last_catch": evidence_time.max().isoformat() if evidence_time.notna().any() else None,
+            "representative_coordinates": str(group["coordinate"].dropna().astype(str).iloc[0]) if group["coordinate"].notna().any() else "",
+            "point_shared_species": int(group["fish_id"].nunique()),
+            "community_records": point_records,
+            "community_points": 1,
+            "community_sources": " / ".join(sorted(group["source_name"].dropna().unique())),
+            "community_latest": evidence_time.max().isoformat() if evidence_time.notna().any() else "",
+            "source_url": source_urls.iloc[0] if not source_urls.empty else "",
+            "has_staple_fish": has_staple,
         })
     return pd.DataFrame(rows)
 
@@ -1007,17 +1267,27 @@ def recommendation_table(
             rf4stat_trophy_activity["target_fish"].str.casefold().eq(fish_keyword.strip().casefold())
         ].copy()
 
-    if is_farm and not earnings.empty:
+    if is_farm:
+        farm_earnings = recent_farm_earnings()
         point_rows = []
-        for _, sample in earnings.iterrows():
-            label = earnings_point_group(sample["map_id"], sample.get("coordinates"))
+        for _, sample in farm_earnings.iterrows():
+            label = sample.get("point_label") or earnings_point_group(sample["map_id"], sample.get("coordinates"))
             if not label:
                 continue
-            try:
-                species = json.loads(sample.get("species_composition") or "[]")
-            except (TypeError, json.JSONDecodeError):
-                species = []
-            species_counts = {str(item.get("fish_id") or ""): int(item.get("count") or 0) for item in species}
+            stable = stable_farm_earnings(sample)
+            if not bool(sample.get("earnings_is_current", False)):
+                stable["stability_note"] += f"；复用 {float(sample.get('earnings_age_days') or 0):.1f} 天前高尾数收益小时"
+            species = stable["species"]
+            main_economic_fish = "、".join(farm_earnings_economic_fish(species))
+            if not main_economic_fish:
+                continue
+            if stable["stable_catches"] < 20:
+                continue
+            species_counts = {
+                str(item.get("fish_id") or ""): int(item.get("count") or 0)
+                for item in species
+                if str(item.get("fish_id") or "") not in FARM_VOLATILE_FISH_IDS
+            }
             dominant_id = max(species_counts, key=species_counts.get) if species_counts else ""
             dominant_item = next((item for item in species if item.get("fish_id") == dominant_id), {})
             point_rows.append(
@@ -1028,36 +1298,83 @@ def recommendation_table(
                     "target_fish": FISH_ZH.get(
                         dominant_id, _chinese_or_pending(dominant_item.get("fish_name_en"), "鱼种")
                     ) if dominant_id else "",
-                    "recent_catches": int(sample.get("catch_count") or 0),
+                    "main_economic_fish": main_economic_fish,
+                    "recent_catches": stable["stable_catches"],
+                    "stable_catch_count": stable["stable_catches"],
+                    "point_record_count": 0,
+                    "reported_point_catches": 0,
+                    "farm_quantity_value": stable["stable_catches"],
+                    "farm_quantity_label": f"稳定小时尾数 {stable['stable_catches']}",
+                    "farm_candidate_kind": "earnings",
+                    "reference_income": stable["stable_income"],
+                    "income_samples": 1,
+                    "income_scope": "点位稳定收益小时" if stable["stable_income"] is not None else "偶发高价值贡献未知",
+                    "stability_note": stable["stability_note"],
                     "recent_stars": 0,
                     "last_catch": sample.get("collected_at"),
                     "representative_coordinates": str(sample.get("coordinates") or ""),
                     "point_shared_species": len(species),
+                    "source_url": sample.get("source_url") or "",
+                    "has_staple_fish": any(item.get("fish_id") in FARM_STAPLE_FISH_IDS for item in species),
+                    "earnings_is_current": bool(sample.get("earnings_is_current", False)),
                 }
             )
         candidates = pd.DataFrame(point_rows)
-        if not candidates.empty:
-            candidates = candidates.sort_values("recent_catches", ascending=False).drop_duplicates(
-                ["map_id", "point_label"], keep="first"
-            )
-            if not activity.empty:
-                map_activity = activity.groupby("map_id", as_index=False).agg(
-                    current_hour_catches=("current_hour_catches", "sum"),
-                    previous_3h_catches=("previous_3h_catches", "sum"),
-                    activity_score=("activity_score", "sum"),
+        community_candidates = farm_community_candidates()
+        if not community_candidates.empty:
+            if candidates.empty:
+                candidates = community_candidates
+            else:
+                candidates = pd.concat(
+                    [candidates, community_candidates.dropna(axis=1, how="all")], ignore_index=True
                 )
-                map_activity["activity_status"] = "地图普通流活跃背景"
-                candidates = candidates.merge(map_activity, on="map_id", how="left")
-            map_windows = recent_window_evidence(catches, by_fish=False)
-            if not map_windows.empty:
-                map_windows = map_windows.drop(columns=[f"stars_{hours}h" for hours in RECENT_WINDOWS])
-                candidates = candidates.merge(map_windows, on="map_id", how="left")
+        if not candidates.empty:
+            candidates["_earnings_first"] = candidates["farm_candidate_kind"].eq("earnings")
+            candidates = candidates.sort_values(
+                ["_earnings_first", "farm_quantity_value"], ascending=[False, False]
+            ).drop_duplicates(
+                ["map_id", "point_label"], keep="first"
+            ).drop(columns="_earnings_first")
+            if not activity.empty:
+                candidates = candidates.merge(
+                    activity.drop(columns=["target_fish"]), on=["map_id", "fish_id"], how="left"
+                )
+            if not window_evidence.empty:
+                farm_windows = window_evidence.drop(columns=[f"stars_{hours}h" for hours in RECENT_WINDOWS])
+                candidates = candidates.merge(farm_windows, on=["map_id", "fish_id"], how="left")
             for hours in RECENT_WINDOWS:
                 candidates[f"stars_{hours}h"] = 0
-            candidates["top3_baits"] = "见点位收益详情"
+            candidates["top3_baits"] = candidates["farm_candidate_kind"].map(
+                {"earnings": "见点位收益详情", "community": "见公开点位详情"}
+            )
             if not community.empty:
-                map_community = map_community_evidence_table()
+                map_community = farm_map_community_evidence_table().rename(columns={
+                    "community_records": "map_community_records",
+                    "community_points": "map_community_points",
+                    "community_sources": "map_community_sources",
+                    "community_latest": "map_community_latest",
+                })
                 candidates = candidates.merge(map_community, on="map_id", how="left")
+                for base in ("records", "points"):
+                    own = f"community_{base}"
+                    mapped = f"map_community_{base}"
+                    if own not in candidates:
+                        candidates[own] = None
+                    candidates[own] = candidates[own].fillna(candidates[mapped])
+                if "community_sources" not in candidates:
+                    candidates["community_sources"] = None
+                candidates["community_sources"] = candidates["community_sources"].fillna(
+                    candidates["map_community_sources"]
+                )
+            historical_earnings = candidates["farm_candidate_kind"].eq("earnings") & ~candidates[
+                "earnings_is_current"
+            ].eq(True)
+            recent_support = (
+                candidates["activity_score"].fillna(0).gt(0)
+                | candidates["recent_activity_score"].fillna(0).gt(0)
+                | candidates.get("map_community_records", pd.Series(0, index=candidates.index)).fillna(0).gt(0)
+            )
+            candidates = candidates[~historical_earnings | recent_support]
         weather = weather.merge(candidates, on="map_id", how="inner") if not candidates.empty else weather.iloc[0:0].copy()
     elif is_trophy or objective == "指定鱼种":
         grouped_rows = []
@@ -1166,46 +1483,16 @@ def recommendation_table(
     if not (is_trophy or objective == "指定鱼种") and not is_farm and not community.empty:
         map_community = map_community_evidence_table()
         weather = weather.merge(map_community, on="map_id", how="left")
-    if not earnings.empty:
+    if not earnings.empty and not is_farm:
         map_income = earnings.groupby("map_id", as_index=False).agg(
             map_reference_income=("silver_per_hour", "max"),
             map_income_samples=("source_key", "count"),
         )
-        if is_farm:
-            point_income_rows = []
-            for _, sample in earnings.iterrows():
-                label = earnings_point_group(sample["map_id"], sample.get("coordinates"))
-                if label:
-                    point_income_rows.append(
-                        {
-                            "map_id": sample["map_id"],
-                            "point_label": label,
-                            "point_reference_income": sample["silver_per_hour"],
-                            "source_key": sample["source_key"],
-                        }
-                    )
-            point_income = pd.DataFrame(point_income_rows)
-            if not point_income.empty:
-                point_income = point_income.groupby(["map_id", "point_label"], as_index=False).agg(
-                    point_reference_income=("point_reference_income", "max"),
-                    point_income_samples=("source_key", "count"),
-                )
-                weather = weather.merge(point_income, on=["map_id", "point_label"], how="left")
-            else:
-                weather["point_reference_income"] = None
-                weather["point_income_samples"] = 0
-            weather = weather.merge(map_income, on="map_id", how="left")
-            weather["reference_income"] = weather["point_reference_income"].fillna(weather["map_reference_income"])
-            weather["income_samples"] = weather["point_income_samples"].fillna(0)
-            weather["income_scope"] = weather["point_reference_income"].notna().map(
-                {True: "点位小时样本", False: "仅地图背景"}
-            )
-        else:
-            weather = weather.merge(map_income, on="map_id", how="left")
-            weather["reference_income"] = weather["map_reference_income"]
-            weather["income_samples"] = weather["map_income_samples"]
-            weather["income_scope"] = "地图级样本"
-    else:
+        weather = weather.merge(map_income, on="map_id", how="left")
+        weather["reference_income"] = weather["map_reference_income"]
+        weather["income_samples"] = weather["map_income_samples"]
+        weather["income_scope"] = "地图级样本"
+    elif not is_farm:
         weather[["reference_income", "income_samples"]] = [None, 0]
         weather["income_scope"] = "暂无收益样本"
     temperature_baselines = map_temperature_baselines()
@@ -1268,6 +1555,7 @@ def recommendation_table(
     if "newly_active" not in weather:
         weather["newly_active"] = False
     weather["newly_active"] = weather["newly_active"].eq(True)
+    weather["stable_income_available"] = weather["reference_income"].notna() & weather["reference_income"].gt(0)
     weather["reference_income"] = weather["reference_income"].fillna(0)
     income_score = (weather["reference_income"] / 40).clip(upper=60) + weather["income_samples"].clip(upper=10)
     if is_farm:
@@ -1275,13 +1563,28 @@ def recommendation_table(
     sighting_score = weather["recent_stars"].clip(upper=15) * 4 + weather["recent_catches"].clip(upper=20)
     community_score = weather["community_records"].clip(upper=10) * 0.5 + weather["community_points"].clip(upper=5) * 1.0
     if is_farm:
-        weather["score"] = (
-            income_score
-            + weather["recent_catches"].clip(upper=100) * 0.15
-            + weather["activity_score"].clip(upper=40) * 0.2
-            + weather["recent_activity_score"].clip(upper=30) * 0.15
-            + community_score * 0.25
+        earnings_mask = weather["farm_candidate_kind"].eq("earnings")
+        earnings_score = (
+            (weather["reference_income"] / 50).clip(upper=30)
+            + weather["stable_catch_count"].fillna(0).clip(upper=100) * 0.30
         )
+        community_quantity_score = (
+            weather["point_record_count"].fillna(0).clip(upper=20) * 1.5
+            + weather["reported_point_catches"].fillna(0).clip(upper=40) * 0.6
+            + weather["has_staple_fish"].fillna(False).astype(int) * 8
+        )
+        weather["score"] = (
+            earnings_score.where(earnings_mask, community_quantity_score)
+            + weather["activity_score"].clip(upper=40) * 0.25
+            + weather["recent_activity_score"].clip(upper=30) * 0.20
+            + community_score * 0.35
+        )
+        north_sea = weather["map_id"].eq("level_012_north_sea")
+        weather.loc[north_sea, "score"] *= 0.6
+        weather.loc[north_sea, "stability_note"] = (
+            weather.loc[north_sea, "stability_note"].fillna("")
+            + "；海图毛收益按0.6临时可持续性系数计分"
+        ).str.strip("；")
     elif is_trophy or objective == "指定鱼种":
         weather["point_evidence_score"] = 10 * weather["community_points"] / (weather["community_points"] + 2)
         weather["weekly_background_score"] = (
@@ -1316,10 +1619,16 @@ def recommendation_table(
         "指定鱼种": "RF4-STAT本周上星3/6/12/24/48/72小时更新 + 点位 + RF4DB周榜背景 + 少量普通鱼背景",
     }.get(objective, "地图收益、普通流多窗口近期活跃度与公开星鱼证据")
     if is_farm:
-        weather.loc[weather["income_scope"] == "点位小时样本", "score_basis"] = "同点位分享收益小时 + 鱼种构成 + 地图普通流活跃背景"
+        weather.loc[weather["farm_candidate_kind"] == "earnings", "score_basis"] = "扣除偶发高价值鱼后的点位收益小时 + 稳定尾数 + 地图普通流活跃背景"
+        weather.loc[weather["farm_candidate_kind"] == "community", "score_basis"] = "非奖杯普通点位重复记录 + RF4MAP榜单数量 + 普通流活跃背景"
     weather["recommendation_label"] = weather["map_name"]
     if is_farm:
-        weather["recommendation_label"] = weather["map_name"] + " · " + weather["point_label"]
+        weather["recommendation_label"] = weather.apply(
+            lambda row: farm_recommendation_label(
+                str(row["map_name"]), str(row["point_label"]), str(row.get("main_economic_fish") or "")
+            ),
+            axis=1,
+        )
     elif is_trophy or objective == "指定鱼种":
         weather["recommendation_label"] = (
             weather["map_name"] + " · " + weather["target_fish"]
@@ -1336,11 +1645,28 @@ def recommendation_table(
             if r.get("rf4stat_trophies_72h", 0) >= 5 and r.get("community_points", 0) >= 1
             else "低（积累期）", axis=1
         )
+    elif is_farm:
+        weather["confidence"] = weather.apply(
+            lambda r: "中"
+            if (
+                r.get("farm_candidate_kind") == "earnings"
+                and r.get("stable_catch_count", 0) >= 30
+                and bool(r.get("stable_income_available", False))
+            ) or (
+                r.get("farm_candidate_kind") == "community"
+                and (r.get("point_record_count", 0) >= 5 or r.get("reported_point_catches", 0) >= 10)
+            )
+            else "低（积累期）", axis=1
+        )
     else:
         weather["confidence"] = weather.apply(
             lambda r: "中" if r["recent_catches"] >= 5 and r["income_samples"] >= 1 else "低（积累期）", axis=1
         )
-    return weather.sort_values(["score", "reference_income"], ascending=False)
+    weather = weather.sort_values(["score", "reference_income"], ascending=False)
+    if is_farm:
+        map_rank = weather.groupby("map_id").cumcount()
+        weather = weather[(map_rank < 2) & (~weather["map_id"].eq("level_012_north_sea") | map_rank.eq(0))]
+    return weather
 
 
 def recommendation_horizons(
@@ -1387,8 +1713,11 @@ def recommendation_horizons(
     is_trophy = objective in ("蹲星", "蹲星（地图+鱼种）")
     following["recommendation_label"] = following["map_name"]
     if is_farm:
-        following["recommendation_label"] = (
-            following["map_name"] + " · " + following["point_label"]
+        following["recommendation_label"] = following.apply(
+            lambda row: farm_recommendation_label(
+                str(row["map_name"]), str(row["point_label"]), str(row.get("main_economic_fish") or "")
+            ),
+            axis=1,
         )
     elif is_trophy or objective == "指定鱼种":
         following["recommendation_label"] = (

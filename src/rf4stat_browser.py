@@ -391,6 +391,14 @@ class BrowserReader:
             if response.get('error'):
                 reason = '超时' if response['error'] == 'timeout' else '网络或重定向错误'
                 raise BrowserCollectionError(f'浏览器内帖子分页请求{reason}，本批已停止；保留已保存帖子和续采位置。')
+            from datetime import datetime
+            import gzip
+            from .config import RAW_DIR
+            # Keep the actual response, including ad-only/unknown fragments, for diagnosis.
+            RAW_DIR.mkdir(parents=True, exist_ok=True)
+            stamp = datetime.now().strftime('%Y%m%d-%H%M%S')
+            with gzip.open(RAW_DIR / f'{stamp}-rf4stat-posts-response-{page_number:05d}.html.gz', 'wb') as handle:
+                handle.write(response['html'].encode('utf-8'))
             return parse_page_response(response['status'], response['html'], page_number)
         except Error as exc:
             raise BrowserCollectionError("RF4-STAT 帖子分页连接失败或超时；已保存页和旧缓存保留，关闭 VPN 后可再刷新。") from exc

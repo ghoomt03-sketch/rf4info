@@ -17,6 +17,9 @@ from src.analytics import (
     build_reason_bait_combinations,
     build_recommendation_detail,
     earnings_point_group,
+    farm_community_candidates,
+    farm_earnings_economic_fish,
+    farm_recommendation_label,
     filter_catches_by_fish,
     filter_catches_by_selected_fish,
     fish_activity_table,
@@ -28,6 +31,8 @@ from src.analytics import (
     recent_six_hour_evidence,
     recent_community_spots,
     select_map_render_sample,
+    stable_farm_earnings,
+    weather_timeline_table,
 )
 from src.collectors.rf4db import _earnings_species, _number, collect_catches, collect_map_assets
 from src.collectors.official_weekly import _chinese_only
@@ -152,6 +157,25 @@ class CoreTests(unittest.TestCase):
         self.assertEqual(row["temperature_baseline_samples"], 2)
         self.assertEqual(row["normal_forecast_temperature"], 15)
 
+    def test_weather_timeline_merges_each_map_and_keeps_slots_aligned(self):
+        frame = pd.DataFrame([
+            {"map_id": "map-a", "map_name": "地图A", "unlock_level": 1, "horizon": 1, "forecast_slot": "2026-11-03T00:00:00+08:00", "天气": None, "forecast_day_temperature": 11, "wind_speed": None, "collected_at": "2026-11-02T22:05:00+08:00", "source_url": "https://example.test/1"},
+            {"map_id": "map-a", "map_name": "地图A", "unlock_level": 1, "horizon": 0, "forecast_slot": "2026-11-02T23:00:00+08:00", "天气": "晴", "forecast_day_temperature": 10, "wind_speed": 1.5, "collected_at": "2026-11-02T22:05:00+08:00", "source_url": "https://example.test/0"},
+            {"map_id": "map-b", "map_name": "地图B", "unlock_level": 2, "horizon": 0, "forecast_slot": "2026-11-02T03:00:00+08:00", "天气": "雨", "forecast_day_temperature": 7, "wind_speed": 2, "collected_at": "2026-11-02T02:05:00+08:00", "source_url": "https://example.test/b"},
+        ])
+
+        timeline = weather_timeline_table(frame)
+
+        self.assertEqual(len(timeline), 2)
+        first = timeline.iloc[0]
+        self.assertEqual(first["地图"], "地图A")
+        self.assertEqual(first["D"], "0|1")
+        self.assertEqual(first["现实窗口"], "23|0")
+        self.assertEqual(first["天气"], "晴|—")
+        self.assertEqual(first["预报参考温度"], "10|11")
+        self.assertEqual(first["风速"], "1.5|—")
+        self.assertEqual(timeline.iloc[1]["现实窗口"], "3")
+
     def test_rf4db_refresh_rejects_an_empty_required_stream(self):
         with patch("src.collectors.rf4db._get", return_value=BeautifulSoup("", "lxml")):
             with self.assertRaisesRegex(RuntimeError, "普通渔获"):
@@ -245,6 +269,57 @@ class CoreTests(unittest.TestCase):
             earnings_point_group("level_011_ladoga_02", "107:470 / 300:220"),
             "拖钓路线（中心 204:345）",
         )
+
+    def test_farm_earnings_remove_volatile_trophy_value_and_catches(self):
+        metrics = stable_farm_earnings({
+            "silver_per_hour": 1000,
+            "catch_count": 20,
+            "species_composition": '[{"fish_id":"x_gladius","count":1,"value_pct":40},'
+                                   '{"fish_id":"atl_cod","count":19,"value_pct":60}]',
+        })
+        self.assertEqual(metrics["stable_catches"], 19)
+        self.assertEqual(metrics["stable_income"], 600)
+        self.assertIn("已扣除偶发高价值鱼", metrics["stability_note"])
+
+    def test_farm_earnings_do_not_score_unknown_volatile_value(self):
+        metrics = stable_farm_earnings({
+            "silver_per_hour": 1200,
+            "catch_count": 50,
+            "species_composition": '[{"fish_id":"thynnus_t","count":1,"value_pct":null},'
+                                   '{"fish_id":"makrel","count":49,"value_pct":70}]',
+        })
+        self.assertEqual(metrics["stable_catches"], 49)
+        self.assertIsNone(metrics["stable_income"])
+        self.assertIn("价值贡献未知", metrics["stability_note"])
+
+    def test_farm_economic_fish_excludes_volatile_and_labels_recommendation(self):
+        fish = farm_earnings_economic_fish([
+            {"fish_id": "x_gladius", "fish_name_en": "Swordfish", "count": 1, "value_pct": 80},
+            {"fish_id": "bream", "fish_name_en": "Bream", "count": 20, "value_pct": 12},
+            {"fish_id": "n.pike", "fish_name_en": "Northern Pike", "count": 8, "value_pct": 30},
+            {"fish_id": "asp", "fish_name_en": "Asp", "count": 15, "value_pct": None},
+        ])
+        self.assertEqual(fish, ["常见狗鱼", "欧鳊", "赤梢鱼"])
+        self.assertEqual(
+            farm_recommendation_label("旧奥斯特罗格湖", "27:27", "常见狗鱼、欧鳊"),
+            "旧奥斯特罗格湖 · 27:27（主要经济鱼种：常见狗鱼、欧鳊）",
+        )
+
+    @patch("src.analytics.recent_community_spots")
+    def test_farm_community_excludes_trophy_and_post_only_points(self, recent_spots):
+        recent_spots.return_value = pd.DataFrame([
+            {"source_name": "RF4-STAT", "source_record_id": "normal-1", "fish_id": "n.pike", "fish_name": "常见狗鱼", "quality_label": "普通记录", "map_id": "map-a", "coordinate": "27:27", "spot_label": None, "catch_count": None, "reported_at": "2026-11-02T01:00:00Z", "collected_at": "2026-11-02T01:00:00Z", "source_url": "https://example.test/normal"},
+            {"source_name": "RF4-STAT", "source_record_id": "trophy-same", "fish_id": "bream", "fish_name": "欧鳊", "quality_label": "奖杯标记", "map_id": "map-a", "coordinate": "27:27", "spot_label": None, "catch_count": None, "reported_at": "2026-11-02T01:00:00Z", "collected_at": "2026-11-02T01:00:00Z", "source_url": "https://example.test/trophy"},
+            {"source_name": "RF4-STAT 帖子", "source_record_id": "post-same", "fish_id": "asp", "fish_name": "赤梢鱼", "quality_label": "社区帖子（非逐鱼奖杯）", "map_id": "map-a", "coordinate": "27:27", "spot_label": None, "catch_count": None, "reported_at": "2026-11-02T01:00:00Z", "collected_at": "2026-11-02T01:00:00Z", "source_url": "https://example.test/post"},
+            {"source_name": "RF4-STAT", "source_record_id": "trophy-only", "fish_id": "bream", "fish_name": "欧鳊", "quality_label": "奖杯标记", "map_id": "map-a", "coordinate": "99:99", "spot_label": None, "catch_count": None, "reported_at": "2026-11-02T01:00:00Z", "collected_at": "2026-11-02T01:00:00Z", "source_url": "https://example.test/trophy-only"},
+        ])
+
+        candidates = farm_community_candidates()
+
+        self.assertEqual(candidates["point_label"].tolist(), ["27:27"])
+        self.assertEqual(candidates.iloc[0]["main_economic_fish"], "常见狗鱼")
+        self.assertEqual(candidates.iloc[0]["point_record_count"], 1)
+        self.assertNotIn("RF4-STAT 帖子", candidates.iloc[0]["community_sources"])
 
     def test_interactive_map_keeps_detail_text_off_the_map(self):
         with tempfile.TemporaryDirectory() as directory:

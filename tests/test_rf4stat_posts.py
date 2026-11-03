@@ -81,6 +81,14 @@ class PostsTests(unittest.TestCase):
         self.assertEqual(rows[0]['validation_status'], '有效')
         self.assertEqual(json.loads(rows[0]['raw_payload'])['time_basis'], 'created_at')
 
+    def test_dot_fish_ids_are_preserved_and_unsafe_ids_are_rejected(self):
+        html = post_html().replace('black_crappie', 'n.pike').replace('fish/warm', 'fish/../bad')
+        rows = posts.parse_posts(BeautifulSoup(html, 'lxml'), datetime.now(timezone.utc),
+                                 fish_catalog={'n.pike': '常见狗鱼'})
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0]['fish_id'], 'n.pike')
+        self.assertEqual(rows[0]['fish_name'], '常见狗鱼')
+
     def test_access_failures_and_unknown_html_are_not_empty_history(self):
         for status, html in ((403, 'Forbidden'), (429, 'Rate limited'), (200, '<title>安全检查</title>'),
                              (200, '<script>load()</script>'), (200, 'Premium required'), (302, '')):
@@ -89,6 +97,57 @@ class PostsTests(unittest.TestCase):
                     posts.parse_page_response(status, html, 2)
         self.assertFalse(posts.parse_page_response(200, '', 2).select('.post-item'))
         self.assertEqual(len(posts.parse_page_response(200, post_html(), 1).select('.post-item')), 1)
+
+    def test_only_strict_ad_fragment_is_a_public_window_pause(self):
+        html = '<div class="posts-inpage-ad"><div class="rf4-aads-top"><iframe src="https://example.invalid/ad"></iframe></div></div>'
+        soup = posts.parse_page_response(200, html, 69)
+        self.assertEqual(soup.__dict__.get('_rf4stat_page_kind'), 'ad_only')
+        for extra in ['<p>Premium required</p>', '<script>load()</script>', '<form></form>', '<div id="unknown"></div>']:
+            with self.assertRaises(BrowserCollectionError):
+                posts.parse_page_response(200, html + extra, 69)
+        with self.assertRaises(BrowserCollectionError):
+            posts.parse_page_response(200, '<div class="posts-inpage-ad">Premium required</div>', 69)
+        for status in [401, 403, 429]:
+            with self.assertRaises(BrowserCollectionError):
+                posts.parse_page_response(status, html, 69)
+
+    def test_ad_pause_does_not_fail_or_claim_history_complete_and_next_batch_moves(self):
+        state = posts._initial_state(datetime.now(timezone.utc))
+        state['next_page'] = 70
+        posts._save_state(state)
+        calls = []
+        def fetch(page):
+            calls.append(page)
+            if page == 69:
+                return posts.parse_page_response(200, '<div class="posts-inpage-ad"><iframe></iframe></div>', page)
+            return self.fetch(page)
+        batch = posts.collect_pages(fetch, writer=MagicMock(), known_post_ids={'199999'})
+        self.assertEqual(calls, [1, 2, 3, 69])
+        self.assertEqual(len(batch), 6)
+        state = posts.load_posts_state()
+        self.assertEqual(state['history_status'], 'public_window_paused')
+        self.assertEqual(state['next_page'], 70)
+        self.assertEqual(state['phase'], 'idle')
+        self.assertIn('未认定全部历史结束', batch.message)
+        calls.clear()
+        posts.collect_pages(fetch, writer=MagicMock(), known_post_ids={'199999'})
+        self.assertEqual(calls, list(range(1, 11)))
+        self.assertEqual(posts.load_posts_state()['next_page'], 11)
+
+    def test_recent_gap_resumes_against_frozen_boundary_not_newly_saved_ids(self):
+        calls = []
+        def fetch(page):
+            calls.append(page)
+            return self.fetch(page)
+        posts.collect_pages(fetch, writer=MagicMock(), known_post_ids={'199985'})
+        self.assertEqual(calls, list(range(1, 11)))
+        self.assertEqual(posts.load_posts_state()['recent_next_page'], 11)
+        self.assertEqual(posts.load_posts_state()['recent_status'], 'backfilling')
+        calls.clear()
+        posts.collect_pages(fetch, writer=MagicMock(), known_post_ids={'199999'})
+        self.assertEqual(calls[:8], [1, 2, 3, 11, 12, 13, 14, 15])
+        self.assertLessEqual(len(calls), 10)
+        self.assertEqual(posts.load_posts_state()['recent_status'], 'overlap')
 
     def test_bounded_batch_and_resume_overlap(self):
         writer = MagicMock()

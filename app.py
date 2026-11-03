@@ -16,11 +16,13 @@ from src.analytics import (
     latest_map_assets,
     latest_weather,
     recent_catches,
+    recent_farm_earnings,
     recommendation_horizons,
     refresh_coverage_status,
     refresh_status,
     select_earnings_sample,
     select_map_render_sample,
+    weather_timeline_table,
     weekly_evidence_details,
 )
 from src.config import MAPS, PUBLIC_MODE, WEATHER_ZH
@@ -34,6 +36,7 @@ if not PUBLIC_MODE:
     from src.refresh_process import get_refresh_state, start_refresh, stop_refresh
     from src.refresh_reporting import SOURCE_LABELS
     from src.scheduler_status import scheduler_status
+    from src.collectors.rf4stat_posts import posts_progress
 else:
     SOURCE_LABELS = {}
 
@@ -221,9 +224,19 @@ with st.sidebar:
                 overview["last_success_at"] = overview["last_success_at"].fillna("尚无成功缓存")
                 overview = overview.rename(columns={
                     "source": "来源", "finished_at": "最近尝试", "success": "结果",
-                    "row_count": "记录数", "last_success_at": "最近成功", "message": "原因",
+                    "row_count": "本批保存条数", "last_success_at": "最近成功", "message": "原因",
                 })
-                st.dataframe(overview[["来源", "结果", "最近尝试", "最近成功", "记录数", "原因"]], hide_index=True, width="stretch")
+                st.dataframe(overview[["来源", "结果", "最近尝试", "最近成功", "本批保存条数", "原因"]], hide_index=True, width="stretch")
+                st.caption('本批保存条数不是累计量，也不一定是新增量；RF4-STAT帖子按“帖子＋鱼种”计证据，同帖多鱼种会有多条。')
+                post_state = posts_progress()
+                inventory = post_state['inventory']
+                st.markdown('**RF4-STAT帖子累计与补采进度**')
+                st.write(f"本地累计去重帖子：{int(inventory['posts'])}篇；累计鱼种证据：{int(inventory['evidence_rows'])}条。")
+                st.caption(f"本批网络：{post_state.get('batch_pages', 0)}个帖子页、{post_state.get('batch_rows', 0)}条鱼种证据；窗口已有：{post_state.get('visible_posts', 0)}篇、{post_state.get('visible_rows', 0)}条证据。两者可能重叠，不相加为新增量。")
+                st.caption(f"窗口可见{post_state.get('visible_dom_posts', 0)}篇，成功解析{post_state.get('visible_posts', 0)}篇；缺少必要公开字段而跳过{max(0, int(post_state.get('visible_dom_posts', 0))-int(post_state.get('visible_posts', 0)))}篇，不伪造缺失信息。")
+                recent_label = {'overlap': '已遇到既有帖子边界', 'backfilling': '新帖缺口补采中', 'window_limited': '当前公开窗口不足'}.get(post_state.get('recent_status'), '等待判断')
+                st.caption(f"新帖：{recent_label}；新帖续采页{post_state.get('recent_next_page', 4)}；历史续采页{post_state.get('next_page', 1)}。")
+                st.caption(f"历史：{post_state.get('stop_reason', '等待补采')}。本地发布时间范围：{inventory['oldest']} ～ {inventory['latest']}。不代表全部历史或90天已采全。")
         interval_status = refresh_coverage_status()
         if not interval_status.empty:
             status_labels = {
@@ -301,10 +314,21 @@ with tab_now:
                     slot = pd.to_datetime(top["forecast_slot"], errors="coerce")
                     st.metric(top["recommendation_label"], f"{top['天气']} · {top['forecast_day_temperature']:.0f}°C", f"推荐分 {top['score']:.1f}")
                     if objective in ("搬砖收益", "搬砖（地图+点位）"):
-                        st.write(
-                            f"点位分享收益约 **{top['reference_income']:.0f} 银/小时**；代表收益小时共 **{int(top['recent_catches'])}** 尾、"
-                            f"包含 **{int(top.get('point_shared_species', 0))}** 个鱼种；地图普通流当前小时 **{int(top['current_hour_catches'])}** 条。"
-                        )
+                        if top.get("farm_candidate_kind") == "earnings":
+                            income_text = (
+                                f"扣除偶发高价值鱼后约 **{top['reference_income']:.0f} 银/小时**"
+                                if bool(top.get("stable_income_available", False))
+                                else "**暂无可用稳定银币估算**"
+                            )
+                            st.write(
+                                f"{income_text}；稳定收益小时共 **{int(top.get('stable_catch_count', 0))}** 尾、"
+                                f"包含 **{int(top.get('point_shared_species', 0))}** 个鱼种；目标鱼普通流当前小时 **{int(top['current_hour_catches'])}** 条。"
+                            )
+                        else:
+                            st.write(
+                                f"近期公开高频点位：**{top.get('farm_quantity_label', '暂无数量证据')}**；"
+                                f"代表鱼种 **{top.get('target_fish', '未提供')}**，该鱼普通流当前小时 **{int(top['current_hour_catches'])}** 条。"
+                            )
                     elif objective in ("蹲星", "蹲星（地图+鱼种）", "指定鱼种"):
                         baseline = top.get("normal_forecast_temperature")
                         baseline_text = f"{float(baseline):.1f}°C" if pd.notna(baseline) else "暂无"
@@ -325,7 +349,14 @@ with tab_now:
                         )
                     st.caption(f"排序依据：{top['score_basis']}。公开展示流不是完整鱼口样本。")
                     if pd.notna(slot):
-                        scope_note = "收益来自点位分享的一小时样本，不代表持续保底" if objective in ("搬砖收益", "搬砖（地图+点位）") else "收益为地图级样本，不等同于某坐标保底收益"
+                        if objective in ("搬砖收益", "搬砖（地图+点位）"):
+                            scope_note = (
+                                "收益来自扣除偶发高价值鱼后的点位小时估算，不代表持续保底"
+                                if top.get("farm_candidate_kind") == "earnings"
+                                else "社区与榜单数量不是一小时尾数，且暂无稳定银币样本"
+                            )
+                        else:
+                            scope_note = "收益为地图级样本，不等同于某坐标保底收益"
                         st.caption(f"预报窗口：{slot.strftime('%Y-%m-%d %H:00')} · {scope_note}。")
         st.divider()
         st.subheader("候选地图")
@@ -357,6 +388,9 @@ with tab_now:
             "community_records": "社区交叉记录", "community_points": "社区有效点位",
             "community_sources": "社区来源",
             "point_shared_species": "收益小时鱼种数",
+            "main_economic_fish": "主要经济鱼种",
+            "farm_quantity_label": "数量证据",
+            "stability_note": "稳定性说明",
             "activity_status": "活跃状态", "score": "临时推荐分", "confidence": "可信度",
             "normal_forecast_temperature": "地图预报常温中位数",
             "temperature_baseline_samples": "常温基线时点数", "temperature_regime": "当前温档",
@@ -369,8 +403,12 @@ with tab_now:
             view["RF4DB 1/3/6/12/24/48小时已观测星鱼"] = rec.apply(lambda row: window_counts_text(row, "stars"), axis=1)
             view["RF4-STAT本周上星3/6/12/24/48/72小时更新"] = rec.apply(rf4stat_trophy_counts_text, axis=1)
         if objective in ("搬砖收益", "搬砖（地图+点位）"):
-            view = view.rename(columns={"近期渔获样本": "代表小时尾数"})
-            columns = ["推荐项", "天气", "预报参考温度", "风速", "收益参考", "收益证据范围", "代表小时尾数", "收益小时鱼种数", "当前小时普通渔获", "社区交叉记录", "社区有效点位", "社区来源", "活跃状态", "临时推荐分", "可信度", "source_url"]
+            view["收益参考"] = rec.apply(
+                lambda row: f"{row['reference_income']:.0f} 银/小时"
+                if bool(row.get("stable_income_available", False)) else "暂无稳定银币样本",
+                axis=1,
+            )
+            columns = ["推荐项", "主要经济鱼种", "天气", "预报参考温度", "风速", "收益参考", "收益证据范围", "数量证据", "收益小时鱼种数", "当前小时普通渔获", "社区交叉记录", "社区有效点位", "社区来源", "稳定性说明", "活跃状态", "临时推荐分", "可信度", "source_url"]
         elif objective in ("蹲星", "蹲星（地图+鱼种）", "指定鱼种"):
             columns = ["推荐项", "天气", "预报参考温度", "地图预报常温中位数", "当前温档",
                        "RF4-STAT本周上星3/6/12/24/48/72小时更新", "RF4-STAT近期上星分", "点位证据分",
@@ -381,6 +419,8 @@ with tab_now:
         st.dataframe(view[[c for c in columns if c in view]], width="stretch", hide_index=True)
         if objective in ("蹲星", "蹲星（地图+鱼种）", "指定鱼种"):
             st.warning("蹲星天气温度匹配分当前为0：用户日暴露、预报温度校准和行为阶段漂移尚未满足正式启用门槛。低温/常温/高温只表示该地图当前预报相对自身历史中位数的位置，不等于鱼种已确认偏好。")
+        elif objective in ("搬砖收益", "搬砖（地图+点位）"):
+            st.warning("搬砖候选已区分收益小时与近期公开高频点位：明确奖杯记录和帖子展示点位不参与搬砖候选或数量计分；社区记录和RF4MAP榜单数量不是一小时尾数。推荐项后的主要经济鱼种用于核对点位方向，社区鱼种次序不是价值占比。收益已排除已识别的偶发高价值鱼；挪威海毛收益暂按0.6可持续性系数计分，该系数是保守估算，不是官方成本模型。")
         else:
             st.warning("临时推荐分尚未使用用户日上星强度、温度校准和行为阶段漂移；历史积累达到开发文档门槛后才会启用正式模型。")
 
@@ -397,10 +437,14 @@ with tab_now:
         if detail_candidate_id is not None:
             detail_row = rec[rec["candidate_id"] == detail_candidate_id].iloc[0]
             is_farm_detail = objective in ("搬砖收益", "搬砖（地图+点位）")
+            is_farm_earnings = is_farm_detail and detail_row.get("farm_candidate_kind") == "earnings"
             detail_fish = "" if is_farm_detail else str(detail_row.get("target_fish") or fish_keyword).strip()
             detail_point = str(detail_row.get("point_label") or "").strip()
             detail_catches_source = historical_catches(detail_row["map_id"])
-            detail = build_recommendation_detail(detail_catches_source, detail_row["map_id"], detail_fish, detail_point, earnings)
+            detail_earnings = recent_farm_earnings() if is_farm_detail else earnings
+            detail = build_recommendation_detail(
+                detail_catches_source, detail_row["map_id"], detail_fish, detail_point, detail_earnings
+            )
             target_text = f"目标鱼种“{detail_fish}”" if detail_fish else "该地图近期主要鱼种"
             with st.expander(f"{detail_row['recommendation_label']} · 详情", expanded=True):
                 st.markdown("#### 推荐原因")
@@ -417,10 +461,25 @@ with tab_now:
                         f"该地图历史预报常温中位数为 **{baseline_text}**，当前标记 **{detail_row.get('temperature_regime', '暂无常温基线')}**；这是地图温档，不是目标鱼种已确认偏好。",
                     ])
                 if is_farm_detail:
-                    reasons.extend([
-                        f"本候选来自 **{detail_point}** 的点位分享收益小时，代表样本共 **{int(detail_row['recent_catches'])}** 尾、约 **{detail_row['reference_income']:.0f} 银/小时**。",
-                        "搬砖点位、鱼种比例和评分只使用收益小时明细；下方跨来源近期样本仅作背景，不改变该收益样本比例。",
-                    ])
+                    reasons.append(
+                        f"主要经济鱼种：**{detail_row.get('main_economic_fish', '暂无合格普通证据')}**。"
+                        + ("按该收益小时已知价值占比优先、再按尾数排序。" if is_farm_earnings else "按同点位非奖杯、非帖子普通公开记录的去重出现次数排序，不代表价值占比。")
+                    )
+                    if is_farm_earnings:
+                        income_text = (
+                            f"约 **{detail_row['reference_income']:.0f} 银/小时**"
+                            if bool(detail_row.get("stable_income_available", False))
+                            else "**暂无可用稳定银币估算**"
+                        )
+                        reasons.extend([
+                            f"本候选来自 **{detail_point}** 的收益小时，扣除偶发高价值鱼后共 **{int(detail_row.get('stable_catch_count', 0))}** 尾，稳定收益参考 {income_text}。",
+                            f"稳定性处理：**{detail_row.get('stability_note', '未提供')}**。鱼种比例仍来自该收益小时；跨来源近期样本只作开口背景。",
+                        ])
+                    else:
+                        reasons.extend([
+                            f"本候选来自 **{detail_point}** 的近期公开高频观察：**{detail_row.get('farm_quantity_label', '暂无数量证据')}**。",
+                            "社区记录数与RF4MAP榜单渔获数不是一小时尾数；当前没有稳定银币样本，评分只使用点位重复记录、榜单数量和普通流开口背景。",
+                        ])
                 else:
                     reasons.append(
                         f"{target_text}累计对齐 **{int(detail['sample_count'])}** 条公开证据，来源构成为 **{detail.get('source_breakdown', '暂无')}**；"
@@ -528,7 +587,7 @@ with tab_now:
                 elif not is_farm_detail:
                     st.info("当前地图和鱼种没有可按稳定地图和鱼种对齐的公开证据记录。")
 
-                if is_farm_detail:
+                if is_farm_earnings:
                     st.markdown("#### 搬砖鱼种构成")
                     earnings_species = detail["earnings_species"]
                     if isinstance(earnings_species, pd.DataFrame) and not earnings_species.empty:
@@ -536,28 +595,44 @@ with tab_now:
                         st.caption("鱼种尾数与数量占比来自该点位的一小时收益明细；价值占比是各鱼种对该小时估算总价值的贡献，不等于尾数占比。")
                     else:
                         st.info("当前点位暂无可解析的收益小时鱼种明细。")
+                elif is_farm_detail:
+                    st.markdown("#### 搬砖点位公开证据")
+                    point_evidence = community_spot_details(detail_row["map_id"])
+                    if not point_evidence.empty:
+                        point_evidence = point_evidence[
+                            point_evidence["坐标"].fillna(point_evidence["坑位"]).astype(str).eq(detail_point)
+                        ]
+                    if point_evidence.empty:
+                        st.info("当前候选没有可展开的逐条社区记录；数量证据来自已缓存点位汇总。")
+                    else:
+                        st.dataframe(point_evidence, width="stretch", hide_index=True)
+                    st.caption("社区记录和榜单渔获数仅表示近期公开观察，不是一小时尾数、稳定收益或命中率。")
                 st.markdown("#### 地图与点位标注")
                 map_sample = (
-                    select_earnings_sample(earnings, detail_row["map_id"], detail_point)
-                    if is_farm_detail
-                    else select_map_render_sample(map_assets, earnings, detail_row["map_id"])
+                    select_earnings_sample(detail_earnings, detail_row["map_id"], detail_point)
+                    if is_farm_earnings
+                    else select_map_render_sample(map_assets, detail_earnings, detail_row["map_id"])
                 )
                 if map_sample is not None:
-                    if not is_farm_detail:
-                        point_rows = detail.get("points")
+                    if not is_farm_earnings:
+                        point_rows = point_evidence if is_farm_detail else detail.get("points")
                         map_sample = map_sample.copy()
                         map_sample["spot_details"] = "[]"
                         map_sample["coordinates"] = ""
                         if isinstance(point_rows, pd.DataFrame) and not point_rows.empty:
                             coordinate_rows = point_rows[point_rows["坐标"].astype(str).str.strip().ne("")]
                             map_sample["spot_details"] = coordinate_rows.rename(columns={"坐标": "coordinate"})[["coordinate"]].to_json(orient="records", force_ascii=False)
-                    community_map = community_spot_details(detail_row["map_id"], detail_fish) if not is_farm_detail else pd.DataFrame()
-                    if not is_farm_detail:
+                    community_map = community_spot_details(detail_row["map_id"], detail_fish) if not is_farm_earnings else pd.DataFrame()
+                    if not is_farm_earnings:
                         import json
                         map_sample = map_sample.copy()
                         map_sample["connect_points"] = False
                         existing_spots = json.loads(map_sample.get("spot_details") or "[]")
                         if not community_map.empty:
+                            if is_farm_detail:
+                                community_map = community_map[
+                                    community_map["坐标"].fillna(community_map["坑位"]).astype(str).eq(detail_point)
+                                ]
                             for _, point in community_map[community_map["坐标"].notna()].drop_duplicates(["来源", "坐标"]).iterrows():
                                 existing_spots.append({"coordinate": point["坐标"], "source": point["来源"], "sourceUrl": point["来源链接"], "clipRaw": point["卡线"] or ""})
                         map_sample["spot_details"] = json.dumps(existing_spots, ensure_ascii=False)
@@ -658,13 +733,13 @@ with tab_weather:
             frame = frame[frame["map_id"].isin(selected_maps)]
         if weather_filter:
             frame = frame[frame["weather_code"].isin(weather_filter)]
-        display = frame.rename(columns={
-            "map_name": "地图", "horizon": "D", "forecast_slot": "现实窗口",
-            "天气": "天气", "forecast_day_temperature": "预报参考温度", "wind_speed": "风速",
-            "collected_at": "采集时间", "source_url": "来源",
-        })
-        st.dataframe(display[["地图", "D", "现实窗口", "天气", "预报参考温度", "风速", "采集时间", "来源"]], width="stretch", hide_index=True, height=650)
-        st.caption("预报参考温度与渔获即时温度分开保存；温度日内曲线尚未达到启用门槛。")
+        display = weather_timeline_table(frame)
+        st.dataframe(display, width="stretch", hide_index=True, height=650)
+        st.caption(
+            "同一地图的预报已按时间先后合并；现实窗口为北京时间24小时制小时，"
+            "各列用 | 对齐（温度单位 °C，风速沿用来源单位）。预报参考温度与渔获即时温度分开保存；"
+            "温度日内曲线尚未达到启用门槛。"
+        )
     else:
         st.info("暂无天气缓存。")
 
@@ -714,9 +789,10 @@ with tab_status:
         st.caption("“完整”只表示本批已遇到上次保存的稳定ID，不表示来源全部历史完整；快照源无法恢复刷新间隔内出现后又消失的内容。")
     if not status.empty:
         display = status.rename(columns={
-            "source": "来源", "finished_at": "完成时间", "success": "成功", "row_count": "记录数", "message": "信息"
+            "source": "来源", "finished_at": "完成时间", "success": "成功", "row_count": "本批保存条数", "message": "信息"
         })
-        st.dataframe(display[["来源", "完成时间", "成功", "记录数", "信息"]], width="stretch", hide_index=True)
+        st.dataframe(display[["来源", "完成时间", "成功", "本批保存条数", "信息"]], width="stretch", hide_index=True)
+        st.caption('本批保存条数非累计或净新增；RF4-STAT帖子的累计去重帖子与鱼种证据请看侧栏各来源刷新详情。')
     st.subheader("历史样本覆盖")
     coverage = history_coverage()
     if not coverage.empty:

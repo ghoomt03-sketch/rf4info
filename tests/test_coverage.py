@@ -38,6 +38,16 @@ class CoverageTests(unittest.TestCase):
         self.assertEqual(result[0]["status"], "gap")
         self.assertIn("1/2", result[0]["note"])
 
+    def test_posts_old_history_boundary_cannot_hide_recent_gap(self):
+        rows = [{'source_key': 'p', 'reported_at': '2026-11-03T07:00:00Z'}]
+        for recent, expected in [('backfilling', 'backfilling'), ('window_limited', 'gap'), ('overlap', 'complete')]:
+            with patch('src.coverage.existing_record_keys', return_value={'p'}), patch(
+                'src.collectors.rf4stat_posts.load_posts_state',
+                return_value={'history_status': 'target_boundary', 'recent_status': recent}
+            ):
+                result = assess_refresh('rf4stat_posts', rows, self.previous)
+                self.assertEqual(result[0]['status'], expected)
+
 
 if __name__ == "__main__":
     unittest.main()

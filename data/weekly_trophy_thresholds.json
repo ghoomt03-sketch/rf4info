@@ -47,17 +47,17 @@
   "alfonsino": {
     "kg": 9.0,
     "source_url": "https://download.rf4db.com/zh/fishes/alfonsino",
-    "checked_at": "2026-10-26T22:52:02.384477+08:00"
+    "checked_at": "2026-11-03T01:15:29.979792+08:00"
   },
   "ambl_h": {
     "kg": 8.0,
     "source_url": "https://download.rf4db.com/zh/fishes/ambl_h",
-    "checked_at": "2026-10-26T22:52:02.384477+08:00"
+    "checked_at": "2026-11-03T01:15:29.979792+08:00"
   },
   "ambl_r": {
     "kg": 11.0,
     "source_url": "https://download.rf4db.com/zh/fishes/ambl_r",
-    "checked_at": "2026-10-26T22:52:02.384477+08:00"
+    "checked_at": "2026-11-03T01:15:29.979792+08:00"
   },
   "asp": {
     "kg": 8.0,
@@ -67,12 +67,12 @@
   "atl_cod": {
     "kg": 50.0,
     "source_url": "https://download.rf4db.com/zh/fishes/atl_cod",
-    "checked_at": "2026-10-26T22:52:02.384477+08:00"
+    "checked_at": "2026-11-03T01:15:29.979792+08:00"
   },
   "atl_herring": {
     "kg": 0.8,
     "source_url": "https://download.rf4db.com/zh/fishes/atl_herring",
-    "checked_at": "2026-10-26T22:52:02.384477+08:00"
+    "checked_at": "2026-11-03T01:15:29.979792+08:00"
   },
   "b_bream": {
     "kg": 0.75,
@@ -102,7 +102,7 @@
   "b_scabbardfish": {
     "kg": 4.0,
     "source_url": "https://download.rf4db.com/zh/fishes/b_scabbardfish",
-    "checked_at": "2026-10-26T22:52:02.384477+08:00"
+    "checked_at": "2026-11-03T01:15:29.979792+08:00"
   },
   "barb_toni": {
     "kg": 0.065,
@@ -177,7 +177,7 @@
   "c_anguineus": {
     "kg": 50.0,
     "source_url": "https://download.rf4db.com/zh/fishes/c_anguineus",
-    "checked_at": "2026-10-26T22:52:02.384477+08:00"
+    "checked_at": "2026-11-03T01:15:29.979792+08:00"
   },
   "c_barbel": {
     "kg": 8.0,
@@ -202,7 +202,7 @@
   "c_squid": {
     "kg": 2.0,
     "source_url": "https://download.rf4db.com/zh/fishes/c_squid",
-    "checked_at": "2026-10-26T22:52:02.384477+08:00"
+    "checked_at": "2026-11-03T01:15:29.979792+08:00"
   },
   "carp": {
     "kg": 20.0,
@@ -227,12 +227,12 @@
   "centroloph_n": {
     "kg": 24.0,
     "source_url": "https://download.rf4db.com/zh/fishes/centroloph_n",
-    "checked_at": "2026-10-26T22:52:02.384477+08:00"
+    "checked_at": "2026-11-03T01:15:29.979792+08:00"
   },
   "cetorhinus_m": {
     "kg": 1300.0,
     "source_url": "https://download.rf4db.com/zh/fishes/cetorhinus_m",
-    "checked_at": "2026-10-26T22:52:02.384477+08:00"
+    "checked_at": "2026-11-03T01:15:29.979792+08:00"
   },
   "ch_beluga": {
     "kg": 500.0,
@@ -267,7 +267,7 @@
   "chimaera": {
     "kg": 1.5,
     "source_url": "https://download.rf4db.com/zh/fishes/chimaera",
-    "checked_at": "2026-10-26T22:52:02.384477+08:00"
+    "checked_at": "2026-11-03T01:15:29.979792+08:00"
   },
   "chir": {
     "kg": 7.0,
@@ -277,7 +277,7 @@
   "chlamys_isl": {
     "kg": 0.35,
     "source_url": "https://download.rf4db.com/zh/fishes/chlamys_isl",
-    "checked_at": "2026-10-26T22:52:02.384477+08:00"
+    "checked_at": "2026-11-03T01:15:29.979792+08:00"
   },
   "chukuchan": {
     "kg": 1.8,
@@ -287,7 +287,7 @@
   "coalfish": {
     "kg": 19.0,
     "source_url": "https://download.rf4db.com/zh/fishes/coalfish",
-    "checked_at": "2026-10-26T22:52:02.384477+08:00"
+    "checked_at": "2026-11-03T01:15:29.979792+08:00"
   },
   "common_carp": {
     "kg": 25.0,
@@ -297,7 +297,7 @@
   "conger": {
     "kg": 60.0,
     "source_url": "https://download.rf4db.com/zh/fishes/conger",
-    "checked_at": "2026-10-26T22:52:02.384477+08:00"
+    "checked_at": "2026-11-03T01:15:29.979792+08:00"
   },
   "crawfish": {
     "kg": 0.2,
@@ -312,7 +312,7 @@
   "d_zubatka": {
     "kg": 13.0,
     "source_url": "https://download.rf4db.com/zh/fishes/d_zubatka",
-    "checked_at": "2026-10-26T22:52:02.384477+08:00"
+    "checked_at": "2026-11-03T01:15:29.979792+08:00"
   },
   "dace": {
     "kg": 0.25,
@@ -367,7 +367,7 @@
   "ed_crab": {
     "kg": 1.8,
     "source_url": "https://download.rf4db.com/zh/fishes/ed_crab",
-    "checked_at": "2026-10-26T22:52:02.384477+08:00"
+    "checked_at": "2026-11-03T01:15:29.979792+08:00"
   },
   "eel": {
     "kg": 4.0,
@@ -437,12 +437,12 @@
   "halibut_b": {
     "kg": 25.0,
     "source_url": "https://download.rf4db.com/zh/fishes/halibut_b",
-    "checked_at": "2026-10-26T22:52:02.384477+08:00"
+    "checked_at": "2026-11-03T01:15:29.979792+08:00"
   },
   "halibut_w": {
     "kg": 150.0,
     "source_url": "https://download.rf4db.com/zh/fishes/halibut_w",
-    "checked_at": "2026-10-26T22:52:02.384477+08:00"
+    "checked_at": "2026-11-03T01:15:29.979792+08:00"
   },
   "hi_utsri": {
     "kg": 25.0,
@@ -452,12 +452,12 @@
   "himant_g": {
     "kg": 7.0,
     "source_url": "https://download.rf4db.com/zh/fishes/himant_g",
-    "checked_at": "2026-10-26T22:52:02.384477+08:00"
+    "checked_at": "2026-11-03T01:15:29.979792+08:00"
   },
   "hippoglos_p": {
     "kg": 4.0,
     "source_url": "https://download.rf4db.com/zh/fishes/hippoglos_p",
-    "checked_at": "2026-10-26T22:52:02.384477+08:00"
+    "checked_at": "2026-11-03T01:15:29.979792+08:00"
   },
   "hs_bass": {
     "kg": 8.0,
@@ -482,7 +482,7 @@
   "katran": {
     "kg": 7.0,
     "source_url": "https://download.rf4db.com/zh/fishes/katran",
-    "checked_at": "2026-10-26T22:52:02.384477+08:00"
+    "checked_at": "2026-11-03T01:15:29.979792+08:00"
   },
   "keta": {
     "kg": 8.0,
@@ -547,12 +547,12 @@
   "lamna_n": {
     "kg": 140.0,
     "source_url": "https://download.rf4db.com/zh/fishes/lamna_n",
-    "checked_at": "2026-10-26T22:52:02.384477+08:00"
+    "checked_at": "2026-11-03T01:15:29.979792+08:00"
   },
   "lampris_g": {
     "kg": 140.0,
     "source_url": "https://download.rf4db.com/zh/fishes/lampris_g",
-    "checked_at": "2026-10-26T22:52:02.384477+08:00"
+    "checked_at": "2026-11-03T01:15:29.979792+08:00"
   },
   "lenok_o": {
     "kg": 5.5,
@@ -567,7 +567,7 @@
   "lh_kambala": {
     "kg": 3.0,
     "source_url": "https://download.rf4db.com/zh/fishes/lh_kambala",
-    "checked_at": "2026-10-26T22:52:02.384477+08:00"
+    "checked_at": "2026-11-03T01:15:29.979792+08:00"
   },
   "lm_b_bass": {
     "kg": 6.0,
@@ -577,17 +577,17 @@
   "lophius_p": {
     "kg": 35.0,
     "source_url": "https://download.rf4db.com/zh/fishes/lophius_p",
-    "checked_at": "2026-10-26T22:52:02.384477+08:00"
+    "checked_at": "2026-11-03T01:15:29.979792+08:00"
   },
   "lycodes_e": {
     "kg": 2.5,
     "source_url": "https://download.rf4db.com/zh/fishes/lycodes_e",
-    "checked_at": "2026-10-26T22:52:02.384477+08:00"
+    "checked_at": "2026-11-03T01:15:29.979792+08:00"
   },
   "lycodes_s": {
     "kg": 1.2,
     "source_url": "https://download.rf4db.com/zh/fishes/lycodes_s",
-    "checked_at": "2026-10-26T22:52:02.384477+08:00"
+    "checked_at": "2026-11-03T01:15:29.979792+08:00"
   },
   "m_carp": {
     "kg": 25.0,
@@ -617,27 +617,27 @@
   "m_molva": {
     "kg": 30.0,
     "source_url": "https://download.rf4db.com/zh/fishes/m_molva",
-    "checked_at": "2026-10-26T22:52:02.384477+08:00"
+    "checked_at": "2026-11-03T01:15:29.979792+08:00"
   },
   "m_scorpius": {
     "kg": 3.0,
     "source_url": "https://download.rf4db.com/zh/fishes/m_scorpius",
-    "checked_at": "2026-10-26T22:52:02.384477+08:00"
+    "checked_at": "2026-11-03T01:15:29.979792+08:00"
   },
   "m_zubatka": {
     "kg": 17.0,
     "source_url": "https://download.rf4db.com/zh/fishes/m_zubatka",
-    "checked_at": "2026-10-26T22:52:02.384477+08:00"
+    "checked_at": "2026-11-03T01:15:29.979792+08:00"
   },
   "macrourus_b": {
     "kg": 3.0,
     "source_url": "https://download.rf4db.com/zh/fishes/macrourus_b",
-    "checked_at": "2026-10-26T22:52:02.384477+08:00"
+    "checked_at": "2026-11-03T01:15:29.979792+08:00"
   },
   "makrel": {
     "kg": 2.0,
     "source_url": "https://download.rf4db.com/zh/fishes/makrel",
-    "checked_at": "2026-10-26T22:52:02.384477+08:00"
+    "checked_at": "2026-11-03T01:15:29.979792+08:00"
   },
   "malma": {
     "kg": 7.5,
@@ -647,22 +647,22 @@
   "meagre": {
     "kg": 65.0,
     "source_url": "https://download.rf4db.com/zh/fishes/meagre",
-    "checked_at": "2026-10-26T22:52:02.384477+08:00"
+    "checked_at": "2026-11-03T01:15:29.979792+08:00"
   },
   "menek": {
     "kg": 18.0,
     "source_url": "https://download.rf4db.com/zh/fishes/menek",
-    "checked_at": "2026-10-26T22:52:02.384477+08:00"
+    "checked_at": "2026-11-03T01:15:29.979792+08:00"
   },
   "merlang": {
     "kg": 3.0,
     "source_url": "https://download.rf4db.com/zh/fishes/merlang",
-    "checked_at": "2026-10-26T22:52:02.384477+08:00"
+    "checked_at": "2026-11-03T01:15:29.979792+08:00"
   },
   "merluza": {
     "kg": 9.0,
     "source_url": "https://download.rf4db.com/zh/fishes/merluza",
-    "checked_at": "2026-10-26T22:52:02.384477+08:00"
+    "checked_at": "2026-11-03T01:15:29.979792+08:00"
   },
   "midori_g": {
     "kg": 25.0,
@@ -677,7 +677,7 @@
   "molva": {
     "kg": 25.0,
     "source_url": "https://download.rf4db.com/zh/fishes/molva",
-    "checked_at": "2026-10-26T22:52:02.384477+08:00"
+    "checked_at": "2026-11-03T01:15:29.979792+08:00"
   },
   "muksun": {
     "kg": 6.0,
@@ -687,7 +687,7 @@
   "mytilus_ed": {
     "kg": 0.13,
     "source_url": "https://download.rf4db.com/zh/fishes/mytilus_ed",
-    "checked_at": "2026-10-26T22:52:02.384477+08:00"
+    "checked_at": "2026-11-03T01:15:29.979792+08:00"
   },
   "n.pike": {
     "kg": 12.0,
@@ -762,7 +762,7 @@
   "ostrea_ed": {
     "kg": 0.3,
     "source_url": "https://download.rf4db.com/zh/fishes/ostrea_ed",
-    "checked_at": "2026-10-26T22:52:02.384477+08:00"
+    "checked_at": "2026-11-03T01:15:29.979792+08:00"
   },
   "p_sturgeon": {
     "kg": 100.0,
@@ -772,7 +772,7 @@
   "p_zubatka": {
     "kg": 14.5,
     "source_url": "https://download.rf4db.com/zh/fishes/p_zubatka",
-    "checked_at": "2026-10-26T22:52:02.384477+08:00"
+    "checked_at": "2026-11-03T01:15:29.979792+08:00"
   },
   "palia_kr": {
     "kg": 3.0,
@@ -797,27 +797,27 @@
   "piksha": {
     "kg": 11.0,
     "source_url": "https://download.rf4db.com/zh/fishes/piksha",
-    "checked_at": "2026-10-26T22:52:02.384477+08:00"
+    "checked_at": "2026-11-03T01:15:29.979792+08:00"
   },
   "pinagor": {
     "kg": 6.0,
     "source_url": "https://download.rf4db.com/zh/fishes/pinagor",
-    "checked_at": "2026-10-26T22:52:02.384477+08:00"
+    "checked_at": "2026-11-03T01:15:29.979792+08:00"
   },
   "pollachius": {
     "kg": 11.0,
     "source_url": "https://download.rf4db.com/zh/fishes/pollachius",
-    "checked_at": "2026-10-26T22:52:02.384477+08:00"
+    "checked_at": "2026-11-03T01:15:29.979792+08:00"
   },
   "polyprion": {
     "kg": 60.0,
     "source_url": "https://download.rf4db.com/zh/fishes/polyprion",
-    "checked_at": "2026-10-26T22:52:02.384477+08:00"
+    "checked_at": "2026-11-03T01:15:29.979792+08:00"
   },
   "poutassou": {
     "kg": 0.9,
     "source_url": "https://download.rf4db.com/zh/fishes/poutassou",
-    "checked_at": "2026-10-26T22:52:02.384477+08:00"
+    "checked_at": "2026-11-03T01:15:29.979792+08:00"
   },
   "pumps_sunfish": {
     "kg": 0.45,
@@ -842,7 +842,7 @@
   "red_fish": {
     "kg": 3.0,
     "source_url": "https://download.rf4db.com/zh/fishes/red_fish",
-    "checked_at": "2026-10-26T22:52:02.384477+08:00"
+    "checked_at": "2026-11-03T01:15:29.979792+08:00"
   },
   "resfish": {
     "kg": 1.7,
@@ -867,7 +867,7 @@
   "rk_crab": {
     "kg": 7.5,
     "source_url": "https://download.rf4db.com/zh/fishes/rk_crab",
-    "checked_at": "2026-10-26T22:52:02.384477+08:00"
+    "checked_at": "2026-11-03T01:15:29.979792+08:00"
   },
   "rudd": {
     "kg": 1.5,
@@ -912,7 +912,7 @@
   "s_saurus": {
     "kg": 0.6,
     "source_url": "https://download.rf4db.com/zh/fishes/s_saurus",
-    "checked_at": "2026-10-26T22:52:02.384477+08:00"
+    "checked_at": "2026-11-03T01:15:29.979792+08:00"
   },
   "sabrefish": {
     "kg": 1.5,
@@ -927,22 +927,22 @@
   "sardina_p": {
     "kg": 0.18,
     "source_url": "https://download.rf4db.com/zh/fishes/sardina_p",
-    "checked_at": "2026-10-26T22:52:02.384477+08:00"
+    "checked_at": "2026-11-03T01:15:29.979792+08:00"
   },
   "sea_kambala": {
     "kg": 4.5,
     "source_url": "https://download.rf4db.com/zh/fishes/sea_kambala",
-    "checked_at": "2026-10-26T22:52:02.384477+08:00"
+    "checked_at": "2026-11-03T01:15:29.979792+08:00"
   },
   "sebastes_m": {
     "kg": 5.5,
     "source_url": "https://download.rf4db.com/zh/fishes/sebastes_m",
-    "checked_at": "2026-10-26T22:52:02.384477+08:00"
+    "checked_at": "2026-11-03T01:15:29.979792+08:00"
   },
   "sebastes_n": {
     "kg": 9.0,
     "source_url": "https://download.rf4db.com/zh/fishes/sebastes_n",
-    "checked_at": "2026-10-26T22:52:02.384477+08:00"
+    "checked_at": "2026-11-03T01:15:29.979792+08:00"
   },
   "sevan_trout": {
     "kg": 9.0,
@@ -1022,7 +1022,7 @@
   "somniosus_m": {
     "kg": 600.0,
     "source_url": "https://download.rf4db.com/zh/fishes/somniosus_m",
-    "checked_at": "2026-10-26T22:52:02.384477+08:00"
+    "checked_at": "2026-11-03T01:15:29.979792+08:00"
   },
   "sp_bass": {
     "kg": 3.0,
@@ -1102,7 +1102,7 @@
   "thynnus_t": {
     "kg": 250.0,
     "source_url": "https://download.rf4db.com/zh/fishes/thynnus_t",
-    "checked_at": "2026-10-26T22:52:02.384477+08:00"
+    "checked_at": "2026-11-03T01:15:29.979792+08:00"
   },
   "tiulka": {
     "kg": 0.024,
@@ -1122,7 +1122,7 @@
   "turbot": {
     "kg": 14.0,
     "source_url": "https://download.rf4db.com/zh/fishes/turbot",
-    "checked_at": "2026-10-26T22:52:02.384477+08:00"
+    "checked_at": "2026-11-03T01:15:29.979792+08:00"
   },
   "u_lamprey": {
     "kg": 0.07,
@@ -1202,7 +1202,7 @@
   "x_gladius": {
     "kg": 300.0,
     "source_url": "https://download.rf4db.com/zh/fishes/x_gladius",
-    "checked_at": "2026-10-26T22:52:02.384477+08:00"
+    "checked_at": "2026-11-03T01:15:29.979792+08:00"
   },
   "yotsushiro": {
     "kg": 25.0,
@@ -1212,7 +1212,7 @@
   "zoarces_v": {
     "kg": 0.9,
     "source_url": "https://download.rf4db.com/zh/fishes/zoarces_v",
-    "checked_at": "2026-10-26T22:52:02.384477+08:00"
+    "checked_at": "2026-11-03T01:15:29.979792+08:00"
   },
   "zs_grayling": {
     "kg": 2.0,
