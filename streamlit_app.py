@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 import logging
+import importlib
 import os
 import runpy
+import sys
 import time
 
 import streamlit as st
@@ -38,6 +40,11 @@ except Exception:
 os.environ["RF4_DB_PATH"] = str(runtime_database)
 startup_progress.progress(70, text="正在读取筛选与推荐数据")
 time.sleep(0.05)
+
+# Streamlit Cloud may hot-pull app.py before invalidating an already-imported
+# analytics module. Reload it so one deployment cannot mix two code versions.
+if "src.analytics" in sys.modules:
+    importlib.reload(sys.modules["src.analytics"])
 
 runpy.run_module("app", run_name="__main__")
 
