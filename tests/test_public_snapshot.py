@@ -136,6 +136,22 @@ class PublicSnapshotTests(unittest.TestCase):
                 self.assertEqual(manifest["source_row_counts"]["weather_forecasts"], 2)
                 self.assertEqual(manifest["runtime_row_counts"]["weather_forecasts"], 1)
 
+            broken_manifest = json.loads((output_dir / "manifest.json").read_text(encoding="utf-8"))
+            broken_manifest["runtime_bundle"]["sha256"] = "0" * 64
+            (output_dir / "manifest.json").write_text(
+                json.dumps(broken_manifest, ensure_ascii=False), encoding="utf-8"
+            )
+            fallback_updates = []
+            self.assertEqual(
+                prepare_public_runtime(
+                    output_dir, runtime,
+                    progress_callback=lambda value, text: fallback_updates.append((value, text)),
+                    retry_attempts=2, retry_delay_seconds=0,
+                ),
+                runtime,
+            )
+            self.assertIn("暂用上一份已验证数据", fallback_updates[-1][1])
+
 
 if __name__ == "__main__":
     unittest.main()

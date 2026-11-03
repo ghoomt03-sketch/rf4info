@@ -3,11 +3,13 @@ from __future__ import annotations
 import gzip
 import hashlib
 import json
+import logging
 import os
 import shutil
 import sqlite3
 import tempfile
 import threading
+import time
 from contextlib import closing
 from pathlib import Path
 from typing import Callable
@@ -38,9 +40,46 @@ def prepare_public_runtime(
     data_dir: Path = PUBLIC_DATA_DIR,
     runtime_path: Path = DEFAULT_RUNTIME,
     progress_callback: ProgressCallback | None = None,
+    retry_attempts: int = 3,
+    retry_delay_seconds: float = 1.0,
 ) -> Path:
     with _PREPARE_LOCK:
-        return _prepare_public_runtime(data_dir, runtime_path, progress_callback)
+        version_path = runtime_path.resolve().with_suffix(".version")
+        can_fallback = runtime_path.resolve().is_file() and version_path.is_file()
+        last_error: Exception | None = None
+        expected_update_errors = (
+            FileNotFoundError, OSError, RuntimeError, json.JSONDecodeError,
+            gzip.BadGzipFile, sqlite3.Error,
+        )
+        for attempt in range(max(1, retry_attempts)):
+            try:
+                return _prepare_public_runtime(data_dir, runtime_path, progress_callback)
+            except expected_update_errors as exc:
+                last_error = exc
+                logging.warning(
+                    "公开数据第 %s/%s 次加载失败，可能处于热更新切换窗口：%s",
+                    attempt + 1, max(1, retry_attempts), exc,
+                )
+                if attempt + 1 < max(1, retry_attempts):
+                    _report_progress(progress_callback, 0.02, "公开数据正在切换版本，准备重试")
+                    time.sleep(max(0.0, retry_delay_seconds))
+        if can_fallback and _verified_runtime_exists(runtime_path.resolve(), version_path):
+            _report_progress(progress_callback, 1.0, "新版数据正在切换，暂用上一份已验证数据")
+            return runtime_path.resolve()
+        assert last_error is not None
+        raise last_error
+
+
+def _verified_runtime_exists(runtime_path: Path, version_path: Path) -> bool:
+    if not runtime_path.is_file() or not version_path.is_file():
+        return False
+    try:
+        if not version_path.read_text(encoding="utf-8").strip():
+            return False
+        with closing(sqlite3.connect(f"{runtime_path.as_uri()}?mode=ro", uri=True)) as conn:
+            return conn.execute("PRAGMA integrity_check").fetchone()[0] == "ok"
+    except (OSError, sqlite3.Error):
+        return False
 
 
 def _prepare_public_runtime(
