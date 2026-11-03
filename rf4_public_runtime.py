@@ -18,6 +18,7 @@ from typing import Callable
 ROOT_DIR = Path(__file__).resolve().parent
 PUBLIC_DATA_DIR = ROOT_DIR / "public_data"
 DEFAULT_RUNTIME = Path(tempfile.gettempdir()) / "rf4info" / "public.sqlite3"
+PUBLIC_RUNTIME_LOADER_VERSION = 4
 SHARDED_TABLES = ("catch_records", "community_spots", "official_weekly_records")
 _PREPARE_LOCK = threading.Lock()
 ProgressCallback = Callable[[float, str], None]

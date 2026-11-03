@@ -10,11 +10,16 @@ from pathlib import Path
 
 from export_public_snapshot import _week_key, export_public_snapshot
 from publish_public_snapshot import _snapshot_signature
-from rf4_public_runtime import DEFAULT_RUNTIME, prepare_public_runtime
+from rf4_public_runtime import (
+    DEFAULT_RUNTIME, PUBLIC_RUNTIME_LOADER_VERSION, prepare_public_runtime,
+)
 from src.db import SCHEMA
 
 
 class PublicSnapshotTests(unittest.TestCase):
+    def test_loader_supports_current_public_manifest_version(self):
+        self.assertEqual(PUBLIC_RUNTIME_LOADER_VERSION, 4)
+
     def test_default_runtime_uses_reusable_system_temp_directory(self):
         expected_parent = Path(tempfile.gettempdir()) / "rf4info"
         self.assertEqual(DEFAULT_RUNTIME.parent, expected_parent)

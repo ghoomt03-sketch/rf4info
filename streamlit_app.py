@@ -9,7 +9,13 @@ import time
 
 import streamlit as st
 
-from rf4_public_runtime import prepare_public_runtime
+import rf4_public_runtime as public_runtime
+
+
+REQUIRED_PUBLIC_RUNTIME_LOADER_VERSION = 4
+if getattr(public_runtime, "PUBLIC_RUNTIME_LOADER_VERSION", 0) < REQUIRED_PUBLIC_RUNTIME_LOADER_VERSION:
+    public_runtime = importlib.reload(public_runtime)
+prepare_public_runtime = public_runtime.prepare_public_runtime
 
 
 st.set_page_config(page_title="俄钓4筛选推荐", page_icon="🎣", layout="wide")
