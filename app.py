@@ -40,6 +40,8 @@ if not PUBLIC_MODE:
 else:
     SOURCE_LABELS = {}
 
+CATCH_TABLE_PAGE_SIZE = 200
+
 
 if os.environ.get("RF4_PAGE_CONFIGURED") != "1":
     st.set_page_config(page_title="俄钓4筛选推荐", page_icon="🎣", layout="wide")
@@ -705,9 +707,21 @@ with tab_catches:
             "catch_temperature": "即时温度", "weather_code": "天气", "rig": "钓组", "baits": "饵料",
             "fish_grade": "等级", "caught_at": "捕获时间", "source_url": "来源",
         })
-        st.caption(f"符合条件：{len(display)} 条公开渔获。普通流用于地图+鱼种活跃度，星鱼流用于点位/条件证据；即时温度不会直接当作天气预报的游戏日参考温度。")
+        total_rows = len(display)
+        page_count = max(1, (total_rows + CATCH_TABLE_PAGE_SIZE - 1) // CATCH_TABLE_PAGE_SIZE)
+        page_index = st.selectbox(
+            "结果页",
+            options=range(page_count),
+            format_func=lambda index: f"第 {index + 1} / {page_count} 页",
+            key="catch_result_page",
+        )
+        start_row = page_index * CATCH_TABLE_PAGE_SIZE
+        end_row = min(start_row + CATCH_TABLE_PAGE_SIZE, total_rows)
+        page_display = display.iloc[start_row:end_row]
+        shown_range = f"{start_row + 1}～{end_row}" if total_rows else "0"
+        st.caption(f"符合条件：{total_rows} 条公开渔获；当前显示第 {shown_range} 条。普通流用于地图+鱼种活跃度，星鱼流用于点位/条件证据；即时温度不会直接当作天气预报的游戏日参考温度。")
         cols = ["鱼种", "地图", "坐标", "游戏时间", "即时温度", "天气", "钓组", "饵料", "等级", "捕获时间", "来源"]
-        st.dataframe(display[[c for c in cols if c in display]], width="stretch", hide_index=True, height=600)
+        st.dataframe(page_display[[c for c in cols if c in page_display]], width="stretch", hide_index=True, height=600)
     else:
         st.info("暂无渔获缓存。")
 
