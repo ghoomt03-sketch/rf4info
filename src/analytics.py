@@ -8,7 +8,7 @@ from datetime import timedelta
 
 import pandas as pd
 
-from .config import FISH_ZH, WEATHER_ZH
+from .config import FISH_ZH, PUBLIC_MODE, WEATHER_ZH
 from .catalog import rf4db_fish_catalog
 from .db import read_frame
 from .habit_evidence import all_source_habit_records, rf4stat_habit_records, source_breakdown
@@ -112,8 +112,23 @@ FARM_VOLATILE_FISH_IDS = frozenset({"x_gladius", "thynnus_t", "cetorhinus_m", "s
 FARM_EARNINGS_LOOKBACK_DAYS = 14
 
 
+def _public_model_table(name: str) -> pd.DataFrame | None:
+    """公开端优先读取由全量历史离线生成的模型快照。"""
+    if not PUBLIC_MODE:
+        return None
+    exists = read_frame(
+        "SELECT 1 AS found FROM sqlite_master WHERE type='table' AND name=?", (name,)
+    )
+    if exists.empty:
+        return None
+    return read_frame(f'SELECT * FROM "{name}"')
+
+
 def recent_farm_earnings() -> pd.DataFrame:
     """Return current earnings plus recent high-volume point hours for farm ranking."""
+    model = _public_model_table("model_recent_farm_earnings")
+    if model is not None:
+        return model
     frame = read_frame(
         """SELECT e.*, m.name_zh AS map_name, m.unlock_level
         FROM earnings_samples e LEFT JOIN maps m ON m.map_id=e.map_id
@@ -214,12 +229,10 @@ def latest_map_assets() -> pd.DataFrame:
 
 
 def recent_catches(limit: int = 30000) -> pd.DataFrame:
-    frame = read_frame(
-        """SELECT c.*, m.name_zh AS map_name, m.unlock_level
+    sql = """SELECT c.*, m.name_zh AS map_name, m.unlock_level
         FROM catch_records c LEFT JOIN maps m ON m.map_id=c.map_id
-        ORDER BY COALESCE(c.caught_at,c.collected_at) DESC LIMIT ?""",
-        (limit,),
-    )
+        ORDER BY COALESCE(c.caught_at,c.collected_at) DESC"""
+    frame = read_frame(sql if PUBLIC_MODE else sql + " LIMIT ?", () if PUBLIC_MODE else (limit,))
     if not frame.empty:
         frame["fish_name"] = frame.apply(
             lambda row: FISH_ZH.get(row["fish_id"], _chinese_or_pending(row["fish_name_en"], "鱼种")), axis=1
@@ -682,6 +695,9 @@ def rf4stat_trophy_update_activity(now=None) -> pd.DataFrame:
 def map_temperature_baselines() -> pd.DataFrame:
     """按地图+预报时点去重后的预报参考温度中位数定义地图常温基线。"""
     columns = ["map_id", "normal_forecast_temperature", "temperature_baseline_samples"]
+    model = _public_model_table("model_map_temperature_baselines")
+    if model is not None:
+        return model.reindex(columns=columns)
     frame = read_frame(
         """SELECT map_id,forecast_slot,forecast_day_temperature,collected_at
            FROM weather_forecasts WHERE forecast_day_temperature IS NOT NULL"""
@@ -1749,6 +1765,9 @@ def refresh_coverage_status() -> pd.DataFrame:
 
 
 def history_coverage() -> pd.DataFrame:
+    model = _public_model_table("model_history_coverage")
+    if model is not None:
+        return model
     return read_frame(
         """SELECT fish_grade AS data_stream, COUNT(*) AS sample_count,
         MIN(caught_at) AS oldest_record, MAX(caught_at) AS newest_record,
@@ -1758,6 +1777,9 @@ def history_coverage() -> pd.DataFrame:
 
 
 def condition_history_coverage() -> pd.DataFrame:
+    model = _public_model_table("model_condition_history_coverage")
+    if model is not None:
+        return model
     rf4db = read_frame(
         """SELECT 'RF4DB:' || source_id AS source_record_key, 'RF4DB渔获' AS source_name,
                   map_id,fish_id,game_time,weather_code,catch_temperature,caught_at
@@ -1777,6 +1799,12 @@ def condition_history_coverage() -> pd.DataFrame:
         [block.dropna(axis=1, how="all") for block in (rf4db, rf4stat)],
         ignore_index=True,
         sort=False,
+    ).reindex(columns=[
+        "source_record_key", "source_name", "map_id", "fish_id", "game_time",
+        "weather_code", "catch_temperature", "caught_at", "evidence_time",
+    ])
+    evidence["evidence_time"] = pd.to_datetime(
+        evidence["evidence_time"], format="mixed", errors="coerce", utc=True
     )
     if evidence.empty:
         return pd.DataFrame([{
@@ -1829,6 +1857,9 @@ def condition_history_coverage() -> pd.DataFrame:
 
 def data_source_inventory() -> pd.DataFrame:
     """返回真实接入状态和本地覆盖，避免把计划来源展示成已接入。"""
+    model = _public_model_table("model_source_inventory")
+    if model is not None:
+        return model
     rf4db = read_frame(
         """SELECT
         (SELECT COUNT(*) FROM weather_forecasts) AS weather_rows,

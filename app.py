@@ -283,6 +283,8 @@ if not status.empty:
         latest_text = pd.to_datetime(successful["finished_at"], errors="coerce").max().strftime("%Y-%m-%d %H:%M")
 data_location_label = "公开数据" if PUBLIC_MODE else "本地数据"
 st.caption(f"{data_location_label}最近成功更新：{latest_text} · 数据仅作出发前参考")
+if PUBLIC_MODE:
+    st.caption("公开端直接读取最近48小时原始渔获与社区证据；历史覆盖、地图温度基线、收益候选和上星时段分布由发布主机预先计算后发布，不在网页启动时重算。其中收益候选仍按既定近期窗口计算，不冒充长期稳定收益模型。")
 
 tab_now, tab_catches, tab_income, tab_weather, tab_status = st.tabs(
     ["当前/下一小时", "渔获筛选", "收益榜", "天气时间轴", "数据状态与方法"]
@@ -542,9 +544,9 @@ with tab_now:
                 if isinstance(bait_recommendations, pd.DataFrame) and not bait_recommendations.empty:
                     st.dataframe(bait_recommendations, width="stretch", hide_index=True)
                     if is_farm_detail:
-                        st.caption("仅针对该收益小时鱼种构成中的主要鱼种分别列出，每种最多8项。证据来自同地图最近7天的明确上星记录、周榜与RF4-STAT帖子；完整组合优先于来源只提供单项的记录。不参与搬砖评分，也不代表该坐标或工具网格的稳定配方。")
+                        st.caption("仅针对该收益小时鱼种构成中的主要鱼种分别列出，每种最多8项。公开端使用当前发布的近期原始证据与最新周榜；完整组合优先于来源只提供单项的记录。不参与搬砖评分，也不代表该坐标或工具网格的稳定配方。" if PUBLIC_MODE else "仅针对该收益小时鱼种构成中的主要鱼种分别列出，每种最多8项。证据来自同地图最近7天的明确上星记录、周榜与RF4-STAT帖子；完整组合优先于来源只提供单项的记录。不参与搬砖评分，也不代表该坐标或工具网格的稳定配方。")
                     else:
-                        st.caption("按同地图、同鱼种最近7天统计，每套饵料组合与钓组在同一来源记录内只计一次；完整组合优先，再参考明确上星、周榜和RF4-STAT帖子。周榜日期不进入小时、天气或游戏时间分析；旧版单项记录不会被跨记录拼成组合。每种最多8项，原始次数不是咬口率。")
+                        st.caption(("公开端按当前发布的最近48小时原始记录与最新周榜统计" if PUBLIC_MODE else "按同地图、同鱼种最近7天统计") + "，每套饵料组合与钓组在同一来源记录内只计一次；完整组合优先，再参考明确上星、周榜和RF4-STAT帖子。周榜日期不进入小时、天气或游戏时间分析；旧版单项记录不会被跨记录拼成组合。每种最多8项，原始次数不是咬口率。")
                 else:
                     st.info("该地图目标鱼种最近7天暂无可用鱼饵证据；不会用长期历史或其他鱼种自动填补。")
 
@@ -802,7 +804,7 @@ with tab_status:
             "map_count": "地图数", "fish_count": "鱼种数",
         })
         st.dataframe(coverage[["数据流", "本地样本", "最早记录", "最新记录", "地图数", "鱼种数"]], width="stretch", hide_index=True)
-    st.caption("实时刷新只负责最近窗口；30/90 日习性模型使用本地持续累积及可续传历史补采。未达到实际覆盖天数前仍会显示数据不足。")
+    st.caption("公开端此处展示发布主机基于完整历史生成的覆盖模型；网页运行库只带近期原始数据，不会在启动时扫描全量历史。" if PUBLIC_MODE else "实时刷新只负责最近窗口；30/90 日习性模型使用本地持续累积及可续传历史补采。未达到实际覆盖天数前仍会显示数据不足。")
     condition_coverage = condition_history_coverage()
     if not condition_coverage.empty:
         condition_coverage = condition_coverage.rename(columns={

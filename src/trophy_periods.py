@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 
 import pandas as pd
 
+from .config import PUBLIC_MODE
 from .db import read_frame
 from .habit_evidence import rf4stat_habit_records, source_breakdown
 
@@ -65,6 +66,23 @@ def period_distributions(records: pd.DataFrame, now=None) -> dict:
 
 
 def trophy_period_evidence(map_id: str, fish_id: str) -> dict:
+    if PUBLIC_MODE:
+        model = read_frame(
+            """SELECT payload_json FROM model_trophy_periods
+               WHERE map_id=? AND fish_id=?""",
+            (map_id, fish_id),
+        ) if not read_frame(
+            "SELECT 1 AS found FROM sqlite_master WHERE type='table' AND name='model_trophy_periods'"
+        ).empty else pd.DataFrame()
+        if not model.empty:
+            import json
+
+            payload = json.loads(model.iloc[0]["payload_json"])
+            for block in payload.get("blocks", []):
+                block["table"] = pd.DataFrame(block.get("table", []))
+                for key in ("start", "end"):
+                    block[key] = pd.to_datetime(block.get(key), errors="coerce", utc=True)
+            return payload
     catches = read_frame("""SELECT source_id,fish_grade,game_time,caught_at FROM catch_records
         WHERE map_id=? AND fish_id=? AND fish_grade='star'""", (map_id, fish_id))
     if not catches.empty:

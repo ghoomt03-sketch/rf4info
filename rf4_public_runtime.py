@@ -53,7 +53,8 @@ def _prepare_public_runtime(
     runtime_path = runtime_path.resolve()
     manifest_path = data_dir / "manifest.json"
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-    if manifest.get("schema_version") not in {2, 3}:
+    schema_version = manifest.get("schema_version")
+    if schema_version not in {2, 3, 4}:
         raise RuntimeError("不支持的公开数据清单版本")
 
     version = hashlib.sha256(manifest_path.read_bytes()).hexdigest()
@@ -68,6 +69,8 @@ def _prepare_public_runtime(
         return _prepare_from_bundle(
             data_dir, runtime_path, version_path, version, manifest, bundle, progress_callback
         )
+    if schema_version >= 4:
+        raise RuntimeError("精简公开数据缺少运行库压缩包，不能回退加载全量历史分片")
 
     files = manifest["files"]
     for file_index, item in enumerate(files, start=1):
@@ -158,9 +161,9 @@ def _prepare_from_bundle(
         with closing(sqlite3.connect(temporary)) as conn:
             if conn.execute("PRAGMA integrity_check").fetchone()[0] != "ok":
                 raise RuntimeError("解压后的公开运行库完整性检查失败")
-            for table in SHARDED_TABLES:
+            expected_counts = bundle.get("row_counts") or manifest.get("runtime_row_counts", {})
+            for table, expected in expected_counts.items():
                 actual = conn.execute(f'SELECT COUNT(*) FROM "{table}"').fetchone()[0]
-                expected = manifest["source_row_counts"][table]
                 if actual != expected:
                     raise RuntimeError(f"{table} 解压行数不一致：{actual} != {expected}")
 

@@ -38,6 +38,11 @@ class PublicSnapshotTests(unittest.TestCase):
                      '2026-10-30T09:00:00+08:00', 'https://example.test/weather'),
                 )
                 conn.execute(
+                    "INSERT INTO weather_forecasts VALUES(?,?,?,?,?,?,?,?)",
+                    ('map-a', '2026-10-20T10:00:00+08:00', 0, 'rain', 5.0, 2.0,
+                     '2026-10-20T09:00:00+08:00', 'https://example.test/weather-old'),
+                )
+                conn.execute(
                     "INSERT INTO map_assets VALUES(?,?,?,?,?,?)",
                     ('map-a', '{}', r'G:\\project\\data\\maps\\map-a.webp',
                      'https://example.test/map.webp', '2026-10-30T09:00:00+08:00',
@@ -48,13 +53,17 @@ class PublicSnapshotTests(unittest.TestCase):
                     ('catch-1', 'map-a', '2026-10-30T09:00:00+08:00', 'https://example.test/catch'),
                 )
                 conn.execute(
+                    "INSERT INTO catch_records(source_id,map_id,collected_at,source_url) VALUES(?,?,?,?)",
+                    ('catch-old', 'map-a', '2026-10-20T09:00:00+08:00', 'https://example.test/catch-old'),
+                )
+                conn.execute(
                     "INSERT INTO official_weekly_records(source_key,week_key,region,fish_name,player_name,collected_at,source_url) VALUES(?,?,?,?,?,?,?)",
                     ('weekly-1', '2026-10-26', 'CN', '鱼', '玩家姓名',
                      '2026-10-30T09:00:00+08:00', 'https://example.test/weekly'),
                 )
                 conn.execute(
-                    "INSERT INTO community_spots(source_key,source_name,evidence_type,collected_at,validation_status,raw_payload,source_url) VALUES(?,?,?,?,?,?,?)",
-                    ('spot-1', '社区', 'post', '2026-10-30T09:00:00+08:00', '有效',
+                    "INSERT INTO community_spots(source_key,source_name,evidence_type,map_id,collected_at,validation_status,raw_payload,source_url) VALUES(?,?,?,?,?,?,?,?)",
+                    ('spot-1', 'RF4MAP', 'post', 'map-a', '2026-10-30T09:00:00+08:00', '有效',
                      '{"private":"raw"}', 'https://example.test/spot'),
                 )
                 conn.execute(
@@ -71,8 +80,8 @@ class PublicSnapshotTests(unittest.TestCase):
             manifest = export_public_snapshot(source, output_dir)
             stored_manifest = json.loads((output_dir / "manifest.json").read_text(encoding="utf-8"))
             self.assertEqual(stored_manifest, manifest)
-            self.assertEqual(manifest["schema_version"], 3)
-            self.assertEqual(len([item for item in manifest["files"] if "week" in item]), 1)
+            self.assertEqual(manifest["schema_version"], 4)
+            self.assertEqual(len([item for item in manifest["files"] if "week" in item]), 2)
             for item in manifest["files"]:
                 path = output_dir / item["path"]
                 self.assertEqual(hashlib.sha256(path.read_bytes()).hexdigest(), item["sha256"])
@@ -114,6 +123,18 @@ class PublicSnapshotTests(unittest.TestCase):
                     "data/maps/map-a.webp",
                 )
                 self.assertEqual(conn.execute("PRAGMA integrity_check").fetchone()[0], "ok")
+                self.assertEqual(conn.execute("PRAGMA user_version").fetchone()[0], 4)
+                self.assertTrue(conn.execute(
+                    "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='public_model_versions'"
+                ).fetchone()[0])
+                self.assertEqual(
+                    conn.execute("SELECT COUNT(*) FROM catch_records").fetchone()[0],
+                    manifest["runtime_row_counts"]["catch_records"],
+                )
+                self.assertEqual(manifest["source_row_counts"]["catch_records"], 2)
+                self.assertEqual(manifest["runtime_row_counts"]["catch_records"], 1)
+                self.assertEqual(manifest["source_row_counts"]["weather_forecasts"], 2)
+                self.assertEqual(manifest["runtime_row_counts"]["weather_forecasts"], 1)
 
 
 if __name__ == "__main__":
