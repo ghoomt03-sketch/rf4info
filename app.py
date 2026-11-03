@@ -98,11 +98,10 @@ def load_recommendations(
     player_level: int,
     objective: str,
     fish_keyword: str,
-    blocked_fish: tuple[str, ...],
 ):
     shared_catches = load_all()[3]
     return recommendation_horizons(
-        player_level, objective, fish_keyword, blocked_fish, catches=shared_catches
+        player_level, objective, fish_keyword, (), catches=shared_catches
     )
 
 
@@ -300,8 +299,14 @@ with tab_now:
             st.info("尚无天气缓存。点击左侧“联网刷新全部数据”，或运行 refresh_data.py。")
     else:
         recommendation_frames = load_recommendations(
-            int(player_level), objective, fish_keyword, tuple(blocked_fish)
+            int(player_level), objective, fish_keyword,
         )
+        if objective in ("蹲星", "蹲星（地图+鱼种）") and blocked_fish:
+            recommendation_frames = tuple(
+                frame[~frame["target_fish"].isin(blocked_fish)].copy()
+                if not frame.empty and "target_fish" in frame else frame
+                for frame in recommendation_frames
+            )
         now_col, next_col = st.columns(2)
         for container, horizon, title in ((now_col, 0, "当前小时去哪"), (next_col, 1, "下一小时去哪")):
             with container:
