@@ -83,19 +83,22 @@ def rf4stat_trophy_counts_text(row) -> str:
     )
 
 
-@st.cache_data(ttl=300, show_spinner=False)
+@st.cache_resource(ttl=300, max_entries=1, show_spinner=False)
 def load_all():
     return latest_weather(), latest_earnings(), latest_map_assets(), recent_catches(), refresh_status()
 
 
-@st.cache_data(ttl=300, show_spinner=False)
+@st.cache_resource(ttl=300, max_entries=16, show_spinner=False)
 def load_recommendations(
     player_level: int,
     objective: str,
     fish_keyword: str,
     blocked_fish: tuple[str, ...],
 ):
-    return recommendation_horizons(player_level, objective, fish_keyword, blocked_fish)
+    shared_catches = load_all()[3]
+    return recommendation_horizons(
+        player_level, objective, fish_keyword, blocked_fish, catches=shared_catches
+    )
 
 
 weather, earnings, map_assets, catches, status = load_all()

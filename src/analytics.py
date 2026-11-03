@@ -70,25 +70,32 @@ def recent_catches(limit: int = 30000) -> pd.DataFrame:
 
 def recent_community_spots() -> pd.DataFrame:
     frame = read_frame(
-        """SELECT c.*, m.name_zh AS map_name FROM community_spots c
+        """WITH source_bounds AS (
+            SELECT
+                MAX(CASE WHEN source_name='RF4MAP' THEN collected_at END) AS rf4map_latest,
+                MAX(CASE WHEN source_name='RF4-STAT' THEN julianday(reported_at) END) AS rf4stat_latest,
+                MAX(CASE WHEN source_name='RF4-STAT 帖子' THEN julianday(reported_at) END) AS posts_latest
+            FROM community_spots
+            WHERE validation_status='有效' AND map_id IS NOT NULL
+        )
+        SELECT c.source_key,c.source_name,c.source_record_id,c.evidence_type,c.map_id,
+               c.coordinate,c.spot_label,c.fish_id,c.fish_name,c.baits,c.rig,c.clip,c.depth,
+               c.quality_label,c.catch_count,c.reported_at,c.collected_at,c.validation_status,
+               c.source_url,m.name_zh AS map_name
+        FROM community_spots c
         LEFT JOIN maps m ON m.map_id=c.map_id
-        WHERE c.validation_status='有效' AND c.map_id IS NOT NULL"""
+        CROSS JOIN source_bounds b
+        WHERE c.validation_status='有效' AND c.map_id IS NOT NULL AND (
+            (c.source_name='RF4MAP' AND c.collected_at=b.rf4map_latest)
+            OR (c.source_name='RF4-STAT'
+                AND julianday(c.reported_at) > b.rf4stat_latest - 2.0)
+            OR (c.source_name='RF4-STAT 帖子'
+                AND julianday(c.reported_at) > b.posts_latest - 2.0)
+        )"""
     )
     if frame.empty:
         return frame
-    collected = pd.to_datetime(frame["collected_at"], errors="coerce", utc=True)
-    reported = pd.to_datetime(frame["reported_at"], errors="coerce", utc=True)
-    rf4map_mask = frame["source_name"].eq("RF4MAP")
-    rf4map_latest = collected[rf4map_mask].max()
-    keep = pd.Series(False, index=frame.index)
-    if pd.notna(rf4map_latest):
-        keep |= rf4map_mask & collected.eq(rf4map_latest)
-    for source in ("RF4-STAT", "RF4-STAT 帖子"):
-        source_mask = frame["source_name"].eq(source)
-        latest = reported[source_mask].max()
-        if pd.notna(latest):
-            keep |= source_mask & reported.gt(latest - timedelta(hours=48))
-    return frame[keep].copy()
+    return frame
 
 
 def community_evidence_table() -> pd.DataFrame:
@@ -965,13 +972,15 @@ def recommendation_table(
     objective: str = "综合推荐",
     fish_keyword: str = "",
     blocked_fish: tuple[str, ...] = (),
+    catches: pd.DataFrame | None = None,
 ) -> pd.DataFrame:
     weather = latest_weather()
     if weather.empty:
         return weather
     weather = weather[(weather["horizon"] == horizon) & (weather["unlock_level"] <= player_level)].copy()
     earnings = latest_earnings()
-    catches = recent_catches()
+    if catches is None:
+        catches = recent_catches()
     activity = fish_activity_table(catches)
     window_evidence = recent_window_evidence(catches)
     rf4stat_trophy_activity = rf4stat_trophy_update_activity()
@@ -1339,9 +1348,15 @@ def recommendation_horizons(
     objective: str = "综合推荐",
     fish_keyword: str = "",
     blocked_fish: tuple[str, ...] = (),
+    catches: pd.DataFrame | None = None,
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Build shared evidence once, then attach the two forecast hours."""
-    current = recommendation_table(0, player_level, objective, fish_keyword, blocked_fish)
+    if catches is None:
+        current = recommendation_table(0, player_level, objective, fish_keyword, blocked_fish)
+    else:
+        current = recommendation_table(
+            0, player_level, objective, fish_keyword, blocked_fish, catches=catches
+        )
     if current.empty:
         return current, current.copy()
 

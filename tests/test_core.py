@@ -26,6 +26,7 @@ from src.analytics import (
     map_temperature_baselines,
     recent_window_evidence,
     recent_six_hour_evidence,
+    recent_community_spots,
     select_map_render_sample,
 )
 from src.collectors.rf4db import _earnings_species, _number, collect_catches, collect_map_assets
@@ -37,6 +38,18 @@ from src.normalization import canonical_bait, canonical_fish, normalize_coordina
 
 
 class CoreTests(unittest.TestCase):
+    @patch("src.analytics.read_frame")
+    def test_recent_community_spots_filters_in_sql_and_omits_raw_payload(self, read_frame):
+        read_frame.return_value = pd.DataFrame()
+
+        recent_community_spots()
+
+        query = read_frame.call_args.args[0]
+        self.assertIn("source_bounds", query)
+        self.assertIn("rf4stat_latest - 2.0", query)
+        self.assertNotIn("c.*", query)
+        self.assertNotIn("raw_payload", query)
+
     @patch("src.analytics.latest_weather")
     @patch("src.analytics.recommendation_table")
     def test_recommendation_horizons_reuses_evidence_and_replaces_weather(
