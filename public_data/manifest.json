@@ -1,17 +1,17 @@
 {
   "schema_version": 4,
-  "generated_at": "2026-11-04T13:23:12.916723+08:00",
+  "generated_at": "2026-11-04T14:23:12.913445+08:00",
   "core": "core.sqlite3",
   "runtime_bundle": {
     "path": "runtime.sqlite3.gz",
-    "size_bytes": 2513340,
-    "uncompressed_size_bytes": 16146432,
-    "sha256": "ec78d2707489cef5006869ebe7d663ea9c53eaed4379743046565f231bc311f5",
+    "size_bytes": 2488134,
+    "uncompressed_size_bytes": 15933440,
+    "sha256": "3e65c233afbbdd388b9b1452ce427bb17369fd34c09ae93300b945069cd71e2e",
     "row_counts": {
       "behavior_regimes": 0,
-      "catch_records": 24802,
-      "community_spots": 8205,
-      "earnings_samples": 7,
+      "catch_records": 24777,
+      "community_spots": 7705,
+      "earnings_samples": 6,
       "map_assets": 18,
       "maps": 19,
       "model_condition_history_coverage": 1,
@@ -24,19 +24,19 @@
       "public_model_versions": 6,
       "refresh_coverage": 10,
       "refresh_runs": 10,
-      "weather_forecasts": 144
+      "weather_forecasts": 141
     }
   },
   "files": [
     {
       "path": "core.sqlite3",
-      "size_bytes": 2789376,
-      "sha256": "bbd1c44c8b4fd4cbcf7079116ed30c784e48a654c851cf0af7cd6415154ba641",
+      "size_bytes": 2781184,
+      "sha256": "4f2f89f40e72f0caf3c8e754f517be7f25fb7c8dd85b3a0d442377362d177cf0",
       "row_counts": {
         "behavior_regimes": 0,
         "catch_records": 0,
         "community_spots": 0,
-        "earnings_samples": 7,
+        "earnings_samples": 6,
         "map_assets": 18,
         "maps": 19,
         "model_condition_history_coverage": 1,
@@ -49,7 +49,7 @@
         "public_model_versions": 6,
         "refresh_coverage": 10,
         "refresh_runs": 10,
-        "weather_forecasts": 144
+        "weather_forecasts": 141
       }
     },
     {
@@ -156,7 +156,7 @@
     {
       "path": "weeks/2026-W43.sqlite3",
       "size_bytes": 10678272,
-      "sha256": "6dc675fa81971ad0aeffc463222e9ce482e3d00dea1ee3919485255687f73631",
+      "sha256": "fbba6cae3018fbcf263512e2b23369e5967bdfd946965bfd3088c64c225a5178",
       "week": "2026-W43",
       "row_counts": {
         "catch_records": 10083,
@@ -167,7 +167,7 @@
     {
       "path": "weeks/2026-W44.sqlite3",
       "size_bytes": 48680960,
-      "sha256": "bb3a7388a1d3465b4b9d065cdaa826f20b74f8494c8ea6525e3571fcb894e663",
+      "sha256": "57f94e4d38310f9adf90adbb18a5d44b38935c5ddc36276d2f0aba92fd02a6ca",
       "week": "2026-W44",
       "row_counts": {
         "catch_records": 116633,
@@ -177,33 +177,33 @@
     },
     {
       "path": "weeks/2026-W45.sqlite3",
-      "size_bytes": 14245888,
-      "sha256": "675430c5e55b2b7e4f89388fcf33dcd10bf709e4c56a4a7419888c75e960e971",
+      "size_bytes": 14614528,
+      "sha256": "4d594eeeaa0ba91e4569df0ca2cddcb5b4191b6d0ff1593338153c8b98eddb09",
       "week": "2026-W45",
       "row_counts": {
-        "catch_records": 31801,
-        "community_spots": 9921,
+        "catch_records": 32354,
+        "community_spots": 10465,
         "official_weekly_records": 261
       }
     }
   ],
   "source_row_counts": {
     "behavior_regimes": 0,
-    "catch_records": 166300,
-    "community_spots": 56895,
-    "earnings_samples": 3205,
+    "catch_records": 166853,
+    "community_spots": 57439,
+    "earnings_samples": 3211,
     "map_assets": 18,
     "maps": 19,
     "official_weekly_records": 1814,
     "refresh_coverage": 10,
-    "refresh_runs": 1602,
-    "weather_forecasts": 34475
+    "refresh_runs": 1613,
+    "weather_forecasts": 34616
   },
   "runtime_row_counts": {
     "behavior_regimes": 0,
-    "catch_records": 24802,
-    "community_spots": 8205,
-    "earnings_samples": 7,
+    "catch_records": 24777,
+    "community_spots": 7705,
+    "earnings_samples": 6,
     "map_assets": 18,
     "maps": 19,
     "model_condition_history_coverage": 1,
@@ -216,7 +216,7 @@
     "public_model_versions": 6,
     "refresh_coverage": 10,
     "refresh_runs": 10,
-    "weather_forecasts": 144
+    "weather_forecasts": 141
   },
   "model_row_counts": {
     "model_map_temperature_baselines": 18,
