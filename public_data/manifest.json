@@ -1,15 +1,15 @@
 {
   "schema_version": 4,
-  "generated_at": "2026-11-04T14:23:12.913445+08:00",
+  "generated_at": "2026-11-04T15:23:19.750519+08:00",
   "core": "core.sqlite3",
   "runtime_bundle": {
     "path": "runtime.sqlite3.gz",
-    "size_bytes": 2488134,
-    "uncompressed_size_bytes": 15933440,
-    "sha256": "3e65c233afbbdd388b9b1452ce427bb17369fd34c09ae93300b945069cd71e2e",
+    "size_bytes": 2480035,
+    "uncompressed_size_bytes": 15912960,
+    "sha256": "a32be6800dabb9be80355090b502f58bce6cdc924367b71c070cf90f8a913639",
     "row_counts": {
       "behavior_regimes": 0,
-      "catch_records": 24777,
+      "catch_records": 24682,
       "community_spots": 7705,
       "earnings_samples": 6,
       "map_assets": 18,
@@ -17,21 +17,21 @@
       "model_condition_history_coverage": 1,
       "model_history_coverage": 3,
       "model_map_temperature_baselines": 18,
-      "model_recent_farm_earnings": 41,
+      "model_recent_farm_earnings": 40,
       "model_source_inventory": 5,
       "model_trophy_periods": 505,
       "official_weekly_records": 285,
       "public_model_versions": 6,
       "refresh_coverage": 10,
       "refresh_runs": 10,
-      "weather_forecasts": 141
+      "weather_forecasts": 144
     }
   },
   "files": [
     {
       "path": "core.sqlite3",
-      "size_bytes": 2781184,
-      "sha256": "4f2f89f40e72f0caf3c8e754f517be7f25fb7c8dd85b3a0d442377362d177cf0",
+      "size_bytes": 2785280,
+      "sha256": "11531f661609a2b1720d29a05577446ee4f785dcc354593b9e9f901a7087aa7a",
       "row_counts": {
         "behavior_regimes": 0,
         "catch_records": 0,
@@ -42,14 +42,14 @@
         "model_condition_history_coverage": 1,
         "model_history_coverage": 3,
         "model_map_temperature_baselines": 18,
-        "model_recent_farm_earnings": 41,
+        "model_recent_farm_earnings": 40,
         "model_source_inventory": 5,
         "model_trophy_periods": 505,
         "official_weekly_records": 0,
         "public_model_versions": 6,
         "refresh_coverage": 10,
         "refresh_runs": 10,
-        "weather_forecasts": 141
+        "weather_forecasts": 144
       }
     },
     {
@@ -177,11 +177,11 @@
     },
     {
       "path": "weeks/2026-W45.sqlite3",
-      "size_bytes": 14614528,
-      "sha256": "4d594eeeaa0ba91e4569df0ca2cddcb5b4191b6d0ff1593338153c8b98eddb09",
+      "size_bytes": 14852096,
+      "sha256": "154286ba52833709f80e86f630e9ff0b40a5c23880f2e66328c9951d96f892cf",
       "week": "2026-W45",
       "row_counts": {
-        "catch_records": 32354,
+        "catch_records": 33016,
         "community_spots": 10465,
         "official_weekly_records": 261
       }
@@ -189,19 +189,19 @@
   ],
   "source_row_counts": {
     "behavior_regimes": 0,
-    "catch_records": 166853,
+    "catch_records": 167515,
     "community_spots": 57439,
-    "earnings_samples": 3211,
+    "earnings_samples": 3217,
     "map_assets": 18,
     "maps": 19,
     "official_weekly_records": 1814,
     "refresh_coverage": 10,
-    "refresh_runs": 1613,
-    "weather_forecasts": 34616
+    "refresh_runs": 1619,
+    "weather_forecasts": 34760
   },
   "runtime_row_counts": {
     "behavior_regimes": 0,
-    "catch_records": 24777,
+    "catch_records": 24682,
     "community_spots": 7705,
     "earnings_samples": 6,
     "map_assets": 18,
@@ -209,21 +209,21 @@
     "model_condition_history_coverage": 1,
     "model_history_coverage": 3,
     "model_map_temperature_baselines": 18,
-    "model_recent_farm_earnings": 41,
+    "model_recent_farm_earnings": 40,
     "model_source_inventory": 5,
     "model_trophy_periods": 505,
     "official_weekly_records": 285,
     "public_model_versions": 6,
     "refresh_coverage": 10,
     "refresh_runs": 10,
-    "weather_forecasts": 141
+    "weather_forecasts": 144
   },
   "model_row_counts": {
     "model_map_temperature_baselines": 18,
     "model_history_coverage": 3,
     "model_condition_history_coverage": 1,
     "model_source_inventory": 5,
-    "model_recent_farm_earnings": 41,
+    "model_recent_farm_earnings": 40,
     "model_trophy_periods": 505
   }
 }
