@@ -1,15 +1,15 @@
 {
   "schema_version": 4,
-  "generated_at": "2026-11-05T10:23:13.893516+08:00",
+  "generated_at": "2026-11-05T13:01:30.826236+08:00",
   "core": "core.sqlite3",
   "runtime_bundle": {
     "path": "runtime.sqlite3.gz",
-    "size_bytes": 2416543,
-    "uncompressed_size_bytes": 15560704,
-    "sha256": "9d6e0c5521676ff2f8659beb4d8a3c873849c32a430baf74e02610dc3f267fad",
+    "size_bytes": 2409211,
+    "uncompressed_size_bytes": 15519744,
+    "sha256": "252892d79fa71a67743ec3b3517bab9b24d9e1cb6ef86440365405c7a970a23d",
     "row_counts": {
       "behavior_regimes": 0,
-      "catch_records": 23969,
+      "catch_records": 23856,
       "community_spots": 7475,
       "earnings_samples": 4,
       "map_assets": 18,
@@ -31,7 +31,7 @@
     {
       "path": "core.sqlite3",
       "size_bytes": 2768896,
-      "sha256": "22aea63a569fbca80fbae4acb49730c723961621ae3d9475dd404c0b380e0e56",
+      "sha256": "6a0b11251aedcd360b0d04e5e6a5da8ed3b1fa3d5b1a68a59c962f657e26d79d",
       "row_counts": {
         "behavior_regimes": 0,
         "catch_records": 0,
@@ -177,11 +177,11 @@
     },
     {
       "path": "weeks/2026-W45.sqlite3",
-      "size_bytes": 18759680,
-      "sha256": "5d3d30472e38b8bbbb5f64039b68f6731b96288461949181c1de578f444076dd",
+      "size_bytes": 18833408,
+      "sha256": "efa849c2f2a521e6bb21640d16a3c38813736672e9eb688f173ba3f23aee9a3f",
       "week": "2026-W45",
       "row_counts": {
-        "catch_records": 42347,
+        "catch_records": 42570,
         "community_spots": 12568,
         "official_weekly_records": 265
       }
@@ -189,19 +189,19 @@
   ],
   "source_row_counts": {
     "behavior_regimes": 0,
-    "catch_records": 176846,
+    "catch_records": 177069,
     "community_spots": 59539,
     "earnings_samples": 3265,
     "map_assets": 18,
     "maps": 19,
     "official_weekly_records": 1814,
     "refresh_coverage": 10,
-    "refresh_runs": 1737,
+    "refresh_runs": 1743,
     "weather_forecasts": 37244
   },
   "runtime_row_counts": {
     "behavior_regimes": 0,
-    "catch_records": 23969,
+    "catch_records": 23856,
     "community_spots": 7475,
     "earnings_samples": 4,
     "map_assets": 18,
