@@ -1,17 +1,17 @@
 {
   "schema_version": 4,
-  "generated_at": "2026-11-05T19:23:39.639800+08:00",
+  "generated_at": "2026-11-05T20:24:43.038040+08:00",
   "core": "core.sqlite3",
   "runtime_bundle": {
     "path": "runtime.sqlite3.gz",
-    "size_bytes": 2327324,
-    "uncompressed_size_bytes": 14995456,
-    "sha256": "35291d19c452cb500a7d9508620a780540b0043d87e7e22c51ddbac8f2ee7f5b",
+    "size_bytes": 2467766,
+    "uncompressed_size_bytes": 15523840,
+    "sha256": "1c7b84aa605554152b74ae35c3b47311abcca92065cdf71e40e076b492e41b5a",
     "row_counts": {
       "behavior_regimes": 0,
-      "catch_records": 22926,
+      "catch_records": 22989,
       "community_spots": 7143,
-      "earnings_samples": 3,
+      "earnings_samples": 4,
       "map_assets": 18,
       "maps": 19,
       "model_condition_history_coverage": 1,
@@ -20,23 +20,23 @@
       "model_recent_farm_earnings": 36,
       "model_source_inventory": 5,
       "model_trophy_periods": 506,
-      "official_weekly_records": 285,
+      "official_weekly_records": 1245,
       "public_model_versions": 6,
       "refresh_coverage": 10,
       "refresh_runs": 10,
-      "weather_forecasts": 126
+      "weather_forecasts": 144
     }
   },
   "files": [
     {
       "path": "core.sqlite3",
-      "size_bytes": 2764800,
-      "sha256": "b110c1984f973bdc2474660794c22ae57b2f940ea38114ff8527e6200b96e01f",
+      "size_bytes": 2768896,
+      "sha256": "4fd78e1409c4201ea70cad3125d8f018141eca65b5902a4973339991e6052771",
       "row_counts": {
         "behavior_regimes": 0,
         "catch_records": 0,
         "community_spots": 0,
-        "earnings_samples": 3,
+        "earnings_samples": 4,
         "map_assets": 18,
         "maps": 19,
         "model_condition_history_coverage": 1,
@@ -49,7 +49,7 @@
         "public_model_versions": 6,
         "refresh_coverage": 10,
         "refresh_runs": 10,
-        "weather_forecasts": 126
+        "weather_forecasts": 144
       }
     },
     {
@@ -166,44 +166,44 @@
     },
     {
       "path": "weeks/2026-W44.sqlite3",
-      "size_bytes": 48672768,
-      "sha256": "9c3918ac9ec82fcaa43a606011109b128169f9724cfaa4f0de5e39eef0338b2e",
+      "size_bytes": 48689152,
+      "sha256": "e544bef3948113729e064cf22d4ee90e52d64b818c8b798d0ec3735f2af4c437",
       "week": "2026-W44",
       "row_counts": {
         "catch_records": 116633,
         "community_spots": 26071,
-        "official_weekly_records": 297
+        "official_weekly_records": 332
       }
     },
     {
       "path": "weeks/2026-W45.sqlite3",
-      "size_bytes": 20459520,
-      "sha256": "db61b010df8d02ec88f39dbc2572fa372b2c8cafddd803494ec3365e32159ddf",
+      "size_bytes": 21282816,
+      "sha256": "f2e7efa56df44c54e05a0aa9766f65cd405711a43e0cb88e40b25a1c8355b808",
       "week": "2026-W45",
       "row_counts": {
-        "catch_records": 46089,
+        "catch_records": 47121,
         "community_spots": 13888,
-        "official_weekly_records": 265
+        "official_weekly_records": 1190
       }
     }
   ],
   "source_row_counts": {
     "behavior_regimes": 0,
-    "catch_records": 180593,
+    "catch_records": 181625,
     "community_spots": 60859,
-    "earnings_samples": 3277,
+    "earnings_samples": 3281,
     "map_assets": 18,
     "maps": 19,
-    "official_weekly_records": 1814,
+    "official_weekly_records": 2774,
     "refresh_coverage": 10,
-    "refresh_runs": 1787,
-    "weather_forecasts": 37766
+    "refresh_runs": 1793,
+    "weather_forecasts": 37910
   },
   "runtime_row_counts": {
     "behavior_regimes": 0,
-    "catch_records": 22926,
+    "catch_records": 22989,
     "community_spots": 7143,
-    "earnings_samples": 3,
+    "earnings_samples": 4,
     "map_assets": 18,
     "maps": 19,
     "model_condition_history_coverage": 1,
@@ -212,11 +212,11 @@
     "model_recent_farm_earnings": 36,
     "model_source_inventory": 5,
     "model_trophy_periods": 506,
-    "official_weekly_records": 285,
+    "official_weekly_records": 1245,
     "public_model_versions": 6,
     "refresh_coverage": 10,
     "refresh_runs": 10,
-    "weather_forecasts": 126
+    "weather_forecasts": 144
   },
   "model_row_counts": {
     "model_map_temperature_baselines": 18,
