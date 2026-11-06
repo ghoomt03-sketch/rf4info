@@ -1,15 +1,15 @@
 {
   "schema_version": 4,
-  "generated_at": "2026-11-07T05:23:37.803992+08:00",
+  "generated_at": "2026-11-07T06:23:37.715903+08:00",
   "core": "core.sqlite3",
   "runtime_bundle": {
     "path": "runtime.sqlite3.gz",
-    "size_bytes": 2340195,
-    "uncompressed_size_bytes": 15224832,
-    "sha256": "58fd7d99d569f73f17ea745141da9cb58cc95829e3b0982af3d64afc20666b60",
+    "size_bytes": 2340038,
+    "uncompressed_size_bytes": 15233024,
+    "sha256": "a1f5202047a1f0667b414fa6a8c49283a0ae077eb7b6c42a58ddd408b50dac47",
     "row_counts": {
       "behavior_regimes": 0,
-      "catch_records": 22351,
+      "catch_records": 22359,
       "community_spots": 8038,
       "earnings_samples": 6,
       "map_assets": 18,
@@ -30,8 +30,8 @@
   "files": [
     {
       "path": "core.sqlite3",
-      "size_bytes": 2805760,
-      "sha256": "1e0505cb5379f271e4dcca265337c5ef01ab612cf3ee4f5595aa09fe5e0309e9",
+      "size_bytes": 2809856,
+      "sha256": "dc071870a4f5d8f4dea2c79da426d504b5596c04f864e8f24820198468518c92",
       "row_counts": {
         "behavior_regimes": 0,
         "catch_records": 0,
@@ -177,11 +177,11 @@
     },
     {
       "path": "weeks/2026-W45.sqlite3",
-      "size_bytes": 28082176,
-      "sha256": "1415b1fad9a2bde384da3ff308e0a76ede4f9c6f27c04b3209dbc0b0f6e141f5",
+      "size_bytes": 28180480,
+      "sha256": "cfda3b7fb10ea10f8c8b86cbef578c371891b450ccbd1a1a351b4493bc06cc6e",
       "week": "2026-W45",
       "row_counts": {
-        "catch_records": 63159,
+        "catch_records": 63431,
         "community_spots": 18981,
         "official_weekly_records": 271
       }
@@ -189,19 +189,19 @@
   ],
   "source_row_counts": {
     "behavior_regimes": 0,
-    "catch_records": 197663,
+    "catch_records": 197935,
     "community_spots": 65939,
-    "earnings_samples": 3472,
+    "earnings_samples": 3478,
     "map_assets": 18,
     "maps": 19,
     "official_weekly_records": 1814,
     "refresh_coverage": 10,
-    "refresh_runs": 2006,
-    "weather_forecasts": 42554
+    "refresh_runs": 2012,
+    "weather_forecasts": 42680
   },
   "runtime_row_counts": {
     "behavior_regimes": 0,
-    "catch_records": 22351,
+    "catch_records": 22359,
     "community_spots": 8038,
     "earnings_samples": 6,
     "map_assets": 18,
