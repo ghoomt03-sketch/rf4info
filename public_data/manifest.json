@@ -1,17 +1,17 @@
 {
   "schema_version": 4,
-  "generated_at": "2026-11-07T07:23:36.959449+08:00",
+  "generated_at": "2026-11-07T08:23:25.105561+08:00",
   "core": "core.sqlite3",
   "runtime_bundle": {
     "path": "runtime.sqlite3.gz",
-    "size_bytes": 2340528,
-    "uncompressed_size_bytes": 15237120,
-    "sha256": "1cc3113255c8de071318f7ab98b7f59d88f28eac3306742bb62c89905e87d013",
+    "size_bytes": 2342398,
+    "uncompressed_size_bytes": 15261696,
+    "sha256": "0bbee71cce7af9fbf22e7d69f9b81d6a57974f1ad609f7a2511a5fa67c8f085c",
     "row_counts": {
       "behavior_regimes": 0,
-      "catch_records": 22344,
+      "catch_records": 22404,
       "community_spots": 8031,
-      "earnings_samples": 8,
+      "earnings_samples": 6,
       "map_assets": 18,
       "maps": 19,
       "model_condition_history_coverage": 1,
@@ -30,13 +30,13 @@
   "files": [
     {
       "path": "core.sqlite3",
-      "size_bytes": 2818048,
-      "sha256": "4d30cb549debc2d93c667d6b9e95e17431f91cbb6af17ab583d73a320489e749",
+      "size_bytes": 2809856,
+      "sha256": "d3e466315f4cb3a322f2a5adfb6e21c4c896ad8987daca54a2d6e6644b1508cf",
       "row_counts": {
         "behavior_regimes": 0,
         "catch_records": 0,
         "community_spots": 0,
-        "earnings_samples": 8,
+        "earnings_samples": 6,
         "map_assets": 18,
         "maps": 19,
         "model_condition_history_coverage": 1,
@@ -177,11 +177,11 @@
     },
     {
       "path": "weeks/2026-W45.sqlite3",
-      "size_bytes": 28274688,
-      "sha256": "8d9da08c1976792dcb3c3274bc04eab04858b0ec0b8dbdbea5821de36400c2ab",
+      "size_bytes": 28422144,
+      "sha256": "0f0f4044d7c621b612667dbdebb53cbe2e43a63877547404bda43d6f5b1dbf5a",
       "week": "2026-W45",
       "row_counts": {
-        "catch_records": 63638,
+        "catch_records": 64052,
         "community_spots": 19024,
         "official_weekly_records": 273
       }
@@ -189,21 +189,21 @@
   ],
   "source_row_counts": {
     "behavior_regimes": 0,
-    "catch_records": 198142,
+    "catch_records": 198556,
     "community_spots": 65982,
-    "earnings_samples": 3486,
+    "earnings_samples": 3492,
     "map_assets": 18,
     "maps": 19,
     "official_weekly_records": 1814,
     "refresh_coverage": 10,
-    "refresh_runs": 2021,
-    "weather_forecasts": 42824
+    "refresh_runs": 2027,
+    "weather_forecasts": 42968
   },
   "runtime_row_counts": {
     "behavior_regimes": 0,
-    "catch_records": 22344,
+    "catch_records": 22404,
     "community_spots": 8031,
-    "earnings_samples": 8,
+    "earnings_samples": 6,
     "map_assets": 18,
     "maps": 19,
     "model_condition_history_coverage": 1,
