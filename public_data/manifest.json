@@ -1,17 +1,17 @@
 {
   "schema_version": 4,
-  "generated_at": "2026-11-07T22:23:35.353570+08:00",
+  "generated_at": "2026-11-08T00:23:40.892665+08:00",
   "core": "core.sqlite3",
   "runtime_bundle": {
     "path": "runtime.sqlite3.gz",
-    "size_bytes": 3352411,
-    "uncompressed_size_bytes": 21397504,
-    "sha256": "8c6e40aed32a5ba47ce9ddfae715bd9eb2812ab829d2e998aa3b3a7f7939b72a",
+    "size_bytes": 3435042,
+    "uncompressed_size_bytes": 22257664,
+    "sha256": "ea3f8d9c9f8cd097de69cd0d5b1680ed6c0bc676c614b9119695c2e0b02b00e1",
     "row_counts": {
       "behavior_regimes": 0,
-      "cafe_orders": 98,
+      "cafe_orders": 92,
       "cafe_snapshots": 16,
-      "catch_records": 23534,
+      "catch_records": 23963,
       "community_spots": 7850,
       "earnings_samples": 7,
       "map_assets": 18,
@@ -27,8 +27,8 @@
       "refresh_coverage": 12,
       "refresh_runs": 12,
       "spot_activity_configs": 0,
-      "spot_activity_coverage": 73808,
-      "spot_activity_events": 3624,
+      "spot_activity_coverage": 73414,
+      "spot_activity_events": 3842,
       "spot_activity_meta": 1,
       "spot_activity_species": 618,
       "weather_forecasts": 144
@@ -37,11 +37,11 @@
   "files": [
     {
       "path": "core.sqlite3",
-      "size_bytes": 8474624,
-      "sha256": "17397aecf87a90fba3cf26fda706bc3568c9195005cc7ebf676cbe629360230c",
+      "size_bytes": 9142272,
+      "sha256": "79e78a7a24f33220fdaf1bfe3a7f250eff979ce680165112b57926c84a7eaed6",
       "row_counts": {
         "behavior_regimes": 0,
-        "cafe_orders": 98,
+        "cafe_orders": 92,
         "cafe_snapshots": 16,
         "catch_records": 0,
         "community_spots": 0,
@@ -59,8 +59,8 @@
         "refresh_coverage": 12,
         "refresh_runs": 12,
         "spot_activity_configs": 0,
-        "spot_activity_coverage": 73808,
-        "spot_activity_events": 3624,
+        "spot_activity_coverage": 73414,
+        "spot_activity_events": 3842,
         "spot_activity_meta": 1,
         "spot_activity_species": 618,
         "weather_forecasts": 144
@@ -181,7 +181,7 @@
     {
       "path": "weeks/2026-W44.sqlite3",
       "size_bytes": 48668672,
-      "sha256": "6e3bc1f96394270182d0dcb501c73f6201ffeeac33398cec46bb16c142f440af",
+      "sha256": "bc2b6bd8e73504fb7375b6cef65557d2d1a43ad4c72c3f5c6ede063b773ee04b",
       "week": "2026-W44",
       "row_counts": {
         "catch_records": 116634,
@@ -191,11 +191,11 @@
     },
     {
       "path": "weeks/2026-W45.sqlite3",
-      "size_bytes": 32047104,
-      "sha256": "03136d6fcd9ad685936dbb06711aa285a2f0955c61d7295a07091021cce456d2",
+      "size_bytes": 32505856,
+      "sha256": "9d9f65baa09a65ae36664ecd4cf8189d776a3bb0383b77c7b72160fdce579cdd",
       "week": "2026-W45",
       "row_counts": {
-        "catch_records": 72530,
+        "catch_records": 73803,
         "community_spots": 20933,
         "official_weekly_records": 275
       }
@@ -203,28 +203,28 @@
   ],
   "source_row_counts": {
     "behavior_regimes": 0,
-    "cafe_orders": 98,
+    "cafe_orders": 92,
     "cafe_snapshots": 16,
-    "catch_records": 207035,
+    "catch_records": 208308,
     "community_spots": 67886,
-    "earnings_samples": 3578,
+    "earnings_samples": 3589,
     "map_assets": 18,
     "maps": 19,
     "official_weekly_records": 1814,
     "refresh_coverage": 12,
-    "refresh_runs": 2154,
+    "refresh_runs": 2178,
     "spot_activity_configs": 0,
-    "spot_activity_coverage": 73808,
-    "spot_activity_events": 3624,
+    "spot_activity_coverage": 73414,
+    "spot_activity_events": 3842,
     "spot_activity_meta": 1,
     "spot_activity_species": 618,
-    "weather_forecasts": 45074
+    "weather_forecasts": 45362
   },
   "runtime_row_counts": {
     "behavior_regimes": 0,
-    "cafe_orders": 98,
+    "cafe_orders": 92,
     "cafe_snapshots": 16,
-    "catch_records": 23534,
+    "catch_records": 23963,
     "community_spots": 7850,
     "earnings_samples": 7,
     "map_assets": 18,
@@ -240,8 +240,8 @@
     "refresh_coverage": 12,
     "refresh_runs": 12,
     "spot_activity_configs": 0,
-    "spot_activity_coverage": 73808,
-    "spot_activity_events": 3624,
+    "spot_activity_coverage": 73414,
+    "spot_activity_events": 3842,
     "spot_activity_meta": 1,
     "spot_activity_species": 618,
     "weather_forecasts": 144
