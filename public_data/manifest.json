@@ -1,17 +1,17 @@
 {
   "schema_version": 4,
-  "generated_at": "2026-11-07T12:29:01.515573+08:00",
+  "generated_at": "2026-11-07T14:23:35.959825+08:00",
   "core": "core.sqlite3",
   "runtime_bundle": {
     "path": "runtime.sqlite3.gz",
-    "size_bytes": 2369990,
-    "uncompressed_size_bytes": 15441920,
-    "sha256": "0540f641cbba061757fe3454dc2457dbd6894911ef40f3e3cf50c2816a9cebc6",
+    "size_bytes": 2387001,
+    "uncompressed_size_bytes": 15523840,
+    "sha256": "7ab4775bda490e6943d51cc6e186e6143c8152f31152c66d65fb8cad38428550",
     "row_counts": {
       "behavior_regimes": 0,
-      "catch_records": 22786,
+      "catch_records": 23031,
       "community_spots": 8031,
-      "earnings_samples": 7,
+      "earnings_samples": 6,
       "map_assets": 18,
       "maps": 19,
       "model_condition_history_coverage": 1,
@@ -24,19 +24,19 @@
       "public_model_versions": 6,
       "refresh_coverage": 10,
       "refresh_runs": 10,
-      "weather_forecasts": 126
+      "weather_forecasts": 144
     }
   },
   "files": [
     {
       "path": "core.sqlite3",
-      "size_bytes": 2834432,
-      "sha256": "648b5272252a929094cc974d9fe2e59132470fa71a611ea94131b068cbb8965e",
+      "size_bytes": 2809856,
+      "sha256": "eb0615b4c114d83941fb7e1e6bbf66ed79d0363c9d86af1ca01c2135eb2c3f2a",
       "row_counts": {
         "behavior_regimes": 0,
         "catch_records": 0,
         "community_spots": 0,
-        "earnings_samples": 7,
+        "earnings_samples": 6,
         "map_assets": 18,
         "maps": 19,
         "model_condition_history_coverage": 1,
@@ -49,7 +49,7 @@
         "public_model_versions": 6,
         "refresh_coverage": 10,
         "refresh_runs": 10,
-        "weather_forecasts": 126
+        "weather_forecasts": 144
       }
     },
     {
@@ -177,11 +177,11 @@
     },
     {
       "path": "weeks/2026-W45.sqlite3",
-      "size_bytes": 29069312,
-      "sha256": "495205ab88f3f909d3f924fc5879cbb5dc1846848c71a261b2b2221572e6d33a",
+      "size_bytes": 29401088,
+      "sha256": "42e66e722e4ff42cc0b448a0ae3be0343dab75ddafc46f1a114ff27c706822fb",
       "week": "2026-W45",
       "row_counts": {
-        "catch_records": 65917,
+        "catch_records": 66860,
         "community_spots": 19024,
         "official_weekly_records": 273
       }
@@ -189,21 +189,21 @@
   ],
   "source_row_counts": {
     "behavior_regimes": 0,
-    "catch_records": 200421,
+    "catch_records": 201364,
     "community_spots": 65982,
-    "earnings_samples": 3518,
+    "earnings_samples": 3524,
     "map_assets": 18,
     "maps": 19,
     "official_weekly_records": 1814,
     "refresh_coverage": 10,
-    "refresh_runs": 2051,
-    "weather_forecasts": 43490
+    "refresh_runs": 2059,
+    "weather_forecasts": 43634
   },
   "runtime_row_counts": {
     "behavior_regimes": 0,
-    "catch_records": 22786,
+    "catch_records": 23031,
     "community_spots": 8031,
-    "earnings_samples": 7,
+    "earnings_samples": 6,
     "map_assets": 18,
     "maps": 19,
     "model_condition_history_coverage": 1,
@@ -216,7 +216,7 @@
     "public_model_versions": 6,
     "refresh_coverage": 10,
     "refresh_runs": 10,
-    "weather_forecasts": 126
+    "weather_forecasts": 144
   },
   "model_row_counts": {
     "model_map_temperature_baselines": 18,
