@@ -1,25 +1,25 @@
 {
   "schema_version": 4,
-  "generated_at": "2026-11-09T04:25:56.879380+08:00",
+  "generated_at": "2026-11-09T07:24:32.623133+08:00",
   "core": "core.sqlite3",
   "runtime_bundle": {
     "path": "runtime.sqlite3.gz",
-    "size_bytes": 4109690,
-    "uncompressed_size_bytes": 32182272,
-    "sha256": "84d628346b3df47f16fa34337ddf08ea6c36e865d2c777297c4f0b383ff77f52",
+    "size_bytes": 4101351,
+    "uncompressed_size_bytes": 32612352,
+    "sha256": "4c84848db1a27b654e1d0792f165a7904eb9ca1cfafc974bd2aaea22ddfcd342",
     "row_counts": {
       "behavior_regimes": 0,
-      "cafe_orders": 62,
+      "cafe_orders": 55,
       "cafe_snapshots": 16,
-      "catch_records": 24794,
-      "community_spots": 6716,
-      "earnings_samples": 5,
+      "catch_records": 24974,
+      "community_spots": 5213,
+      "earnings_samples": 7,
       "map_assets": 18,
       "maps": 19,
       "model_condition_history_coverage": 1,
       "model_history_coverage": 3,
       "model_map_temperature_baselines": 18,
-      "model_recent_farm_earnings": 42,
+      "model_recent_farm_earnings": 47,
       "model_source_inventory": 6,
       "model_trophy_periods": 512,
       "official_weekly_records": 285,
@@ -27,31 +27,31 @@
       "refresh_coverage": 12,
       "refresh_runs": 12,
       "spot_activity_configs": 0,
-      "spot_activity_coverage": 70477,
-      "spot_activity_events": 7919,
+      "spot_activity_coverage": 70314,
+      "spot_activity_events": 8337,
       "spot_activity_meta": 1,
-      "spot_activity_species": 619,
-      "weather_forecasts": 144
+      "spot_activity_species": 618,
+      "weather_forecasts": 126
     }
   },
   "files": [
     {
       "path": "core.sqlite3",
-      "size_bytes": 18948096,
-      "sha256": "130e2ed939c012e3184c61b2c0f34f382c4f98389fa942fe10ab0369c7ea6bc0",
+      "size_bytes": 19947520,
+      "sha256": "80c9ccbf8989de215d3f2f570644bd3ca53514ff1c19bf68db3d9cc3ecf36d08",
       "row_counts": {
         "behavior_regimes": 0,
-        "cafe_orders": 62,
+        "cafe_orders": 55,
         "cafe_snapshots": 16,
         "catch_records": 0,
         "community_spots": 0,
-        "earnings_samples": 5,
+        "earnings_samples": 7,
         "map_assets": 18,
         "maps": 19,
         "model_condition_history_coverage": 1,
         "model_history_coverage": 3,
         "model_map_temperature_baselines": 18,
-        "model_recent_farm_earnings": 42,
+        "model_recent_farm_earnings": 47,
         "model_source_inventory": 6,
         "model_trophy_periods": 512,
         "official_weekly_records": 0,
@@ -59,11 +59,11 @@
         "refresh_coverage": 12,
         "refresh_runs": 12,
         "spot_activity_configs": 0,
-        "spot_activity_coverage": 70477,
-        "spot_activity_events": 7919,
+        "spot_activity_coverage": 70314,
+        "spot_activity_events": 8337,
         "spot_activity_meta": 1,
-        "spot_activity_species": 619,
-        "weather_forecasts": 144
+        "spot_activity_species": 618,
+        "weather_forecasts": 126
       }
     },
     {
@@ -169,80 +169,80 @@
     },
     {
       "path": "weeks/2026-W43.sqlite3",
-      "size_bytes": 10678272,
-      "sha256": "8b9579ae8b401fd2eeeb9253b9f40291e3aa1566482d16e0b6f9378cceb92585",
+      "size_bytes": 10674176,
+      "sha256": "721561de6485cbff3bcc518ce1011f5abc06674e3a176dc93705afcfb063a1d1",
       "week": "2026-W43",
       "row_counts": {
         "catch_records": 10088,
-        "community_spots": 20453,
+        "community_spots": 20446,
         "official_weekly_records": 1226
       }
     },
     {
       "path": "weeks/2026-W44.sqlite3",
       "size_bytes": 48672768,
-      "sha256": "b15a0f169a2628917247c4966bab45f3a72f5e276e0c2c069eb53b13bee3109e",
+      "sha256": "51309e935e76e8044b43ea9a161bc08904d65df0eff9ba98d9d9393e6d438e46",
       "week": "2026-W44",
       "row_counts": {
         "catch_records": 116634,
-        "community_spots": 26055,
+        "community_spots": 26054,
         "official_weekly_records": 294
       }
     },
     {
       "path": "weeks/2026-W45.sqlite3",
-      "size_bytes": 37572608,
-      "sha256": "497eff1ef307a5ec1d850473ac3f5b811c376e9e188ec50408a8301477ffc721",
+      "size_bytes": 37437440,
+      "sha256": "7d7fedbf0dd8531ef111e2c88c7f1088a96f349980054fafd57ba2e0de46742f",
       "week": "2026-W45",
       "row_counts": {
         "catch_records": 85705,
-        "community_spots": 22809,
+        "community_spots": 22300,
         "official_weekly_records": 553
       }
     },
     {
       "path": "weeks/2026-W46.sqlite3",
-      "size_bytes": 638976,
-      "sha256": "d1edcedab38a52a74d90352a4512a3939d6568512a8fbc6017977aa545605935",
+      "size_bytes": 1794048,
+      "sha256": "6bf300a78de0a24b0d03ce0673ec77708156ff9ab7617950a58f752b7e2eaf0e",
       "week": "2026-W46",
       "row_counts": {
-        "catch_records": 1655,
-        "community_spots": 33
+        "catch_records": 2841,
+        "community_spots": 2442
       }
     }
   ],
   "source_row_counts": {
     "behavior_regimes": 0,
-    "cafe_orders": 62,
+    "cafe_orders": 55,
     "cafe_snapshots": 16,
-    "catch_records": 221865,
-    "community_spots": 69792,
-    "earnings_samples": 3836,
+    "catch_records": 223051,
+    "community_spots": 71684,
+    "earnings_samples": 3858,
     "map_assets": 18,
     "maps": 19,
     "official_weekly_records": 2099,
     "refresh_coverage": 12,
-    "refresh_runs": 2512,
+    "refresh_runs": 2544,
     "spot_activity_configs": 0,
-    "spot_activity_coverage": 70477,
-    "spot_activity_events": 7919,
+    "spot_activity_coverage": 70314,
+    "spot_activity_events": 8337,
     "spot_activity_meta": 1,
-    "spot_activity_species": 619,
-    "weather_forecasts": 49286
+    "spot_activity_species": 618,
+    "weather_forecasts": 49682
   },
   "runtime_row_counts": {
     "behavior_regimes": 0,
-    "cafe_orders": 62,
+    "cafe_orders": 55,
     "cafe_snapshots": 16,
-    "catch_records": 24794,
-    "community_spots": 6716,
-    "earnings_samples": 5,
+    "catch_records": 24974,
+    "community_spots": 5213,
+    "earnings_samples": 7,
     "map_assets": 18,
     "maps": 19,
     "model_condition_history_coverage": 1,
     "model_history_coverage": 3,
     "model_map_temperature_baselines": 18,
-    "model_recent_farm_earnings": 42,
+    "model_recent_farm_earnings": 47,
     "model_source_inventory": 6,
     "model_trophy_periods": 512,
     "official_weekly_records": 285,
@@ -250,18 +250,18 @@
     "refresh_coverage": 12,
     "refresh_runs": 12,
     "spot_activity_configs": 0,
-    "spot_activity_coverage": 70477,
-    "spot_activity_events": 7919,
+    "spot_activity_coverage": 70314,
+    "spot_activity_events": 8337,
     "spot_activity_meta": 1,
-    "spot_activity_species": 619,
-    "weather_forecasts": 144
+    "spot_activity_species": 618,
+    "weather_forecasts": 126
   },
   "model_row_counts": {
     "model_map_temperature_baselines": 18,
     "model_history_coverage": 3,
     "model_condition_history_coverage": 1,
     "model_source_inventory": 6,
-    "model_recent_farm_earnings": 42,
+    "model_recent_farm_earnings": 47,
     "model_trophy_periods": 512
   },
   "spot_activity_contract_version": 3,
