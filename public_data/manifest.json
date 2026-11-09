@@ -1,12 +1,12 @@
 {
   "schema_version": 4,
-  "generated_at": "2026-11-09T22:23:45.273470+08:00",
+  "generated_at": "2026-11-09T23:23:55.677165+08:00",
   "core": "core.sqlite3",
   "runtime_bundle": {
     "path": "runtime.sqlite3.gz",
-    "size_bytes": 4385701,
+    "size_bytes": 4385697,
     "uncompressed_size_bytes": 37576704,
-    "sha256": "271c67e0e749a1b658d541c85c91a1d41236cab1e8afcc91000718b4b0e27995",
+    "sha256": "0326a736e6c182b2d023da4e8e0d26de062d0ad08048d5fe49151c9f9a4dd62f",
     "row_counts": {
       "behavior_regimes": 0,
       "cafe_orders": 61,
@@ -38,7 +38,7 @@
     {
       "path": "core.sqlite3",
       "size_bytes": 24547328,
-      "sha256": "e216587c62efef748fe7b4a219eb62d579281480b16b4a9db4cc6fa32ec3ca47",
+      "sha256": "321c7b956dcac46d2697fdf14fcc3308195946e4355e6b868278715c8aad7dd2",
       "row_counts": {
         "behavior_regimes": 0,
         "cafe_orders": 61,
@@ -222,7 +222,7 @@
     "maps": 19,
     "official_weekly_records": 2099,
     "refresh_coverage": 12,
-    "refresh_runs": 2731,
+    "refresh_runs": 2743,
     "spot_activity_configs": 0,
     "spot_activity_coverage": 66149,
     "spot_activity_events": 10137,
