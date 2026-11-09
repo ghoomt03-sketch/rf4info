@@ -1,18 +1,18 @@
 {
   "schema_version": 4,
-  "generated_at": "2026-11-09T17:23:48.393149+08:00",
+  "generated_at": "2026-11-09T19:23:47.445043+08:00",
   "core": "core.sqlite3",
   "runtime_bundle": {
     "path": "runtime.sqlite3.gz",
-    "size_bytes": 4411019,
-    "uncompressed_size_bytes": 37715968,
-    "sha256": "c895890a9b4afeb9fa41c565b13c0ed9c09facd4931ccaf6ae1fc89df2e6422c",
+    "size_bytes": 4385696,
+    "uncompressed_size_bytes": 37576704,
+    "sha256": "4315d32bd1dd445fddc709cf75fe73dbcb0d978dadd24ed7abf45bd9cacb881b",
     "row_counts": {
       "behavior_regimes": 0,
       "cafe_orders": 61,
       "cafe_snapshots": 16,
       "catch_records": 25208,
-      "community_spots": 5228,
+      "community_spots": 5791,
       "earnings_samples": 5,
       "map_assets": 18,
       "maps": 19,
@@ -27,18 +27,18 @@
       "refresh_coverage": 12,
       "refresh_runs": 12,
       "spot_activity_configs": 0,
-      "spot_activity_coverage": 69151,
-      "spot_activity_events": 10227,
+      "spot_activity_coverage": 66149,
+      "spot_activity_events": 10137,
       "spot_activity_meta": 1,
-      "spot_activity_species": 618,
+      "spot_activity_species": 619,
       "weather_forecasts": 144
     }
   },
   "files": [
     {
       "path": "core.sqlite3",
-      "size_bytes": 24903680,
-      "sha256": "d465cfdd35c2c50b1034b5ff95f1f9be0918b2deccdaef45f07b7624d28176c7",
+      "size_bytes": 24547328,
+      "sha256": "c0124748e527f59f172f95df3e4f8e15fd7b27783b4d51f01289d30d5c4957d3",
       "row_counts": {
         "behavior_regimes": 0,
         "cafe_orders": 61,
@@ -59,10 +59,10 @@
         "refresh_coverage": 12,
         "refresh_runs": 12,
         "spot_activity_configs": 0,
-        "spot_activity_coverage": 69151,
-        "spot_activity_events": 10227,
+        "spot_activity_coverage": 66149,
+        "spot_activity_events": 10137,
         "spot_activity_meta": 1,
-        "spot_activity_species": 618,
+        "spot_activity_species": 619,
         "weather_forecasts": 144
       }
     },
@@ -169,45 +169,45 @@
     },
     {
       "path": "weeks/2026-W43.sqlite3",
-      "size_bytes": 10674176,
-      "sha256": "721561de6485cbff3bcc518ce1011f5abc06674e3a176dc93705afcfb063a1d1",
+      "size_bytes": 10670080,
+      "sha256": "fcde5967962799803f31f08485d99b0c72c72e5904eaa17fa2fc4b8b43a51aee",
       "week": "2026-W43",
       "row_counts": {
         "catch_records": 10088,
-        "community_spots": 20446,
+        "community_spots": 20443,
         "official_weekly_records": 1226
       }
     },
     {
       "path": "weeks/2026-W44.sqlite3",
       "size_bytes": 48672768,
-      "sha256": "51309e935e76e8044b43ea9a161bc08904d65df0eff9ba98d9d9393e6d438e46",
+      "sha256": "cc062c4fae32fd654d90446267498b64e9bce36c402053ce3dd479332b4b1ad7",
       "week": "2026-W44",
       "row_counts": {
         "catch_records": 116634,
-        "community_spots": 26054,
+        "community_spots": 26051,
         "official_weekly_records": 294
       }
     },
     {
       "path": "weeks/2026-W45.sqlite3",
-      "size_bytes": 37441536,
-      "sha256": "4c91b26e12384e3db374c4928000b272dc0261a3479e440825c2b30622391704",
+      "size_bytes": 37437440,
+      "sha256": "7c3220450e76ba6d6449b16001ef527644065a3ba52959cb5dd58139b23abdd0",
       "week": "2026-W45",
       "row_counts": {
         "catch_records": 85705,
-        "community_spots": 22307,
+        "community_spots": 22301,
         "official_weekly_records": 553
       }
     },
     {
       "path": "weeks/2026-W46.sqlite3",
-      "size_bytes": 2523136,
-      "sha256": "04c849b081f14bfab782f54a026b10588eb6e7154401f8688269dca46d49d804",
+      "size_bytes": 3096576,
+      "sha256": "c7e201f3c029ff232892d195d8e36df989c7eb28325d3867ac720167ff900983",
       "week": "2026-W46",
       "row_counts": {
         "catch_records": 4822,
-        "community_spots": 2495
+        "community_spots": 4350
       }
     }
   ],
@@ -216,18 +216,18 @@
     "cafe_orders": 61,
     "cafe_snapshots": 16,
     "catch_records": 225032,
-    "community_spots": 71744,
+    "community_spots": 73587,
     "earnings_samples": 3875,
     "map_assets": 18,
     "maps": 19,
     "official_weekly_records": 2099,
     "refresh_coverage": 12,
-    "refresh_runs": 2672,
+    "refresh_runs": 2698,
     "spot_activity_configs": 0,
-    "spot_activity_coverage": 69151,
-    "spot_activity_events": 10227,
+    "spot_activity_coverage": 66149,
+    "spot_activity_events": 10137,
     "spot_activity_meta": 1,
-    "spot_activity_species": 618,
+    "spot_activity_species": 619,
     "weather_forecasts": 50096
   },
   "runtime_row_counts": {
@@ -235,7 +235,7 @@
     "cafe_orders": 61,
     "cafe_snapshots": 16,
     "catch_records": 25208,
-    "community_spots": 5228,
+    "community_spots": 5791,
     "earnings_samples": 5,
     "map_assets": 18,
     "maps": 19,
@@ -250,10 +250,10 @@
     "refresh_coverage": 12,
     "refresh_runs": 12,
     "spot_activity_configs": 0,
-    "spot_activity_coverage": 69151,
-    "spot_activity_events": 10227,
+    "spot_activity_coverage": 66149,
+    "spot_activity_events": 10137,
     "spot_activity_meta": 1,
-    "spot_activity_species": 618,
+    "spot_activity_species": 619,
     "weather_forecasts": 144
   },
   "model_row_counts": {
