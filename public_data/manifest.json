@@ -1,12 +1,12 @@
 {
   "schema_version": 4,
-  "generated_at": "2026-11-10T06:27:39.918831+08:00",
+  "generated_at": "2026-11-10T07:24:51.226851+08:00",
   "core": "core.sqlite3",
   "runtime_bundle": {
     "path": "runtime.sqlite3.gz",
-    "size_bytes": 4340225,
-    "uncompressed_size_bytes": 37072896,
-    "sha256": "1df35ddf6f437a19218f01642dc0097b6162c30fb1ae8f7fed44215a1762c03a",
+    "size_bytes": 4321156,
+    "uncompressed_size_bytes": 36913152,
+    "sha256": "0eb3ab0c0433dae23d0935c4854ff76d2ce22399d459ffd6f40e32f4e5594a15",
     "row_counts": {
       "behavior_regimes": 0,
       "cafe_orders": 61,
@@ -27,8 +27,8 @@
       "refresh_coverage": 12,
       "refresh_runs": 12,
       "spot_activity_configs": 0,
-      "spot_activity_coverage": 62753,
-      "spot_activity_events": 10024,
+      "spot_activity_coverage": 61192,
+      "spot_activity_events": 9957,
       "spot_activity_meta": 1,
       "spot_activity_species": 619,
       "weather_forecasts": 144
@@ -37,8 +37,8 @@
   "files": [
     {
       "path": "core.sqlite3",
-      "size_bytes": 24043520,
-      "sha256": "bf0733f054b389a46b6f24c6925ed389a40ba2c94989d59362271922f91e5636",
+      "size_bytes": 23883776,
+      "sha256": "a096e4de47b9555cac9ecacf2e1ef44099d52330b4cc6d7cae152629ccb42f50",
       "row_counts": {
         "behavior_regimes": 0,
         "cafe_orders": 61,
@@ -59,8 +59,8 @@
         "refresh_coverage": 12,
         "refresh_runs": 12,
         "spot_activity_configs": 0,
-        "spot_activity_coverage": 62753,
-        "spot_activity_events": 10024,
+        "spot_activity_coverage": 61192,
+        "spot_activity_events": 9957,
         "spot_activity_meta": 1,
         "spot_activity_species": 619,
         "weather_forecasts": 144
@@ -192,7 +192,7 @@
     {
       "path": "weeks/2026-W45.sqlite3",
       "size_bytes": 37437440,
-      "sha256": "3b3903f7dd0d0f7ac51392f51a4b1bf0fda0e7202fb1891eec4a8299c780ae41",
+      "sha256": "f1b0dc3e941649a51b2853008b000a534b777b3616d30ed4fb9dc872c6d1e67a",
       "week": "2026-W45",
       "row_counts": {
         "catch_records": 85705,
@@ -222,10 +222,10 @@
     "maps": 19,
     "official_weekly_records": 2099,
     "refresh_coverage": 12,
-    "refresh_runs": 2825,
+    "refresh_runs": 2840,
     "spot_activity_configs": 0,
-    "spot_activity_coverage": 62753,
-    "spot_activity_events": 10024,
+    "spot_activity_coverage": 61192,
+    "spot_activity_events": 9957,
     "spot_activity_meta": 1,
     "spot_activity_species": 619,
     "weather_forecasts": 50096
@@ -250,8 +250,8 @@
     "refresh_coverage": 12,
     "refresh_runs": 12,
     "spot_activity_configs": 0,
-    "spot_activity_coverage": 62753,
-    "spot_activity_events": 10024,
+    "spot_activity_coverage": 61192,
+    "spot_activity_events": 9957,
     "spot_activity_meta": 1,
     "spot_activity_species": 619,
     "weather_forecasts": 144
